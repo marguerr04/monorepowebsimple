@@ -1,0 +1,72 @@
+
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+      <ion-menu-button>
+      </ion-menu-button>
+    </ion-buttons>
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/paginamar2">Consultas</ion-breadcrumb>
+    </ion-breadcrumbs>
+  </ion-toolbar>
+</ion-header>
+
+
+
+
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="agregar()">
+    <ion-item>
+      <ion-label position="stacked">Motivo de Consulta</ion-label>
+      <ion-input formControlName="motivo" placeholder="Ej: Dolor de cabeza"></ion-input>
+    </ion-item>
+    
+    <ion-item>
+      <ion-label position="stacked">Diagnóstico</ion-label>
+      <ion-input formControlName="diagnostico" placeholder="(opcional)"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">ID Paciente</ion-label>
+      <ion-input formControlName="pacienteId" placeholder="PAC001"></ion-input>
+    </ion-item>
+
+    <div style="margin-top:12px;">
+      <ion-button type="submit" [disabled]="form.invalid">
+        {{ botonTexto }}
+      </ion-button>
+      
+      <ion-button 
+        *ngIf="isEditing" 
+        fill="outline" 
+        color="medium"
+        (click)="cancelarEdicion()">
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+
+  <ion-list style="margin-top:20px;">
+    <ion-item *ngFor="let consulta of (consultas$ | async)">
+      <ion-label>
+        <h2>{{ consulta.motivo }}</h2>
+        <p *ngIf="consulta.diagnostico">{{ consulta.diagnostico }}</p>
+        <ion-note>
+          Paciente: {{ consulta.pacienteId }} | 
+          Fecha: {{ consulta.fecha.toDate() | date:'short' }}
+        </ion-note>
+      </ion-label>
+      
+      <div slot="end">
+        <ion-button fill="clear" color="warning" class="borde-verde" (click)="editar(consulta)">
+          Editar
+        </ion-button>
+        
+        <ion-button fill="clear" color="danger" class="borde-verde" (click)="eliminar(consulta)">
+          Eliminar
+        </ion-button>
+      </div>
+    </ion-item>
+  </ion-list>
+</ion-content>

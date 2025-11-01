@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+      <ion-menu-button>
+      </ion-menu-button>
+    </ion-buttons>
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/home">Home</ion-breadcrumb>
+      <ion-breadcrumb routerLink="/paginamar1">Historial</ion-breadcrumb>
+    </ion-breadcrumbs>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="container">
+
+  <app-paciente-header
+    [titulo]="'Historial de ' + patientName"
+    subtitulo="">
+  </app-paciente-header>
+
+  <app-card-content>
+    <ion-button routerLink="/paginamar2" expand="block" color="success">
+      Consultas
+    </ion-button>
+
+    <ion-button routerLink="/examenes" expand="block" color="success">
+      Exámenes
+    </ion-button>
+
+    <ion-button expand="block" color="success">
+      Operaciones
+    </ion-button>
+        
+    <ion-button expand="block" class="scan-button">
+      Escaneos totales: {{ totalScans }}
+    </ion-button>
+  </app-card-content>
+  </div>
+</ion-content>

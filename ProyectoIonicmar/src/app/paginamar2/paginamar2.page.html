@@ -1,0 +1,69 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+
+
+
+    <ion-breadcrumbs>
+  <ion-breadcrumb routerLink="/home">Home</ion-breadcrumb>
+  <ion-breadcrumb routerLink="/paginamar1">Historial</ion-breadcrumb>
+  <ion-breadcrumb routerLink="/paginamar2">Consultas</ion-breadcrumb>
+</ion-breadcrumbs>
+
+
+
+    
+
+    <!-- Botón de filtro a la derecha del toolbar -->
+    <ion-buttons slot="end">
+      <ion-button fill="clear">
+        <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- Logo + Título centrado -->
+  <ion-card>
+
+    
+    <ion-card-header>
+      <ion-item lines="none">
+        <ion-avatar slot="start">
+          <img alt="Logo" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+        </ion-avatar>
+
+        <ion-label>
+          <ion-card-title class="ion-text-center">
+            Historial del paciente xxxx
+          </ion-card-title>
+        </ion-label>
+      </ion-item>
+    </ion-card-header>
+  </ion-card>
+  
+  <!-- Lista de consultas -->
+  <ion-list>
+    <ion-item button detail="true">Consulta 1 - fecha DD/MM/YYYY</ion-item>
+    <ion-item button detail="true">Consulta 2 - fecha DD/MM/YYYY</ion-item>
+    <ion-item button detail="true">Consulta 3 - fecha DD/MM/YYYY</ion-item>
+    <ion-item button detail="true">Consulta 4 - fecha DD/MM/YYYY</ion-item>
+  </ion-list>
+
+  <!-- Última consulta destacada -->
+  <ion-card color="danger">
+    <ion-card-content class="ion-text-center">
+      Última consulta: Hace X días
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Botón volver -->
+  <ion-button expand="block" color="medium" routerLink="/home">
+    Volver a Home
+  </ion-button>
+
+
+
+  
+</ion-content>

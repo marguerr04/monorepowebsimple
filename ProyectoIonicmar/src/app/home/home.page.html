@@ -1,0 +1,86 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Home
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <!-- Ususario-->
+    <ion-row>
+      <ion-col size="12" size-md="6" offset-md="3"> 
+        <ion-card>
+          <ion-card-header>
+            <ion-item lines="none">
+              <ion-avatar slot="start">
+                <img src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+              </ion-avatar>
+              <ion-label>
+                <ion-card-title>Juan Pérez</ion-card-title>
+                <ion-card-subtitle>Paciente - 32 años</ion-card-subtitle>
+                <ion-card-subtitle>id:123</ion-card-subtitle>
+              </ion-label>
+            </ion-item>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-icon name="logo-ionic"></ion-icon>
+<ion-icon name="logo-ionic" size="large"></ion-icon>
+<ion-icon name="logo-ionic" color="primary"></ion-icon>
+<ion-icon name="logo-ionic" size="large" color="primary"></ion-icon>
+            <p><strong>Email:</strong> juan.perez@example.com</p>
+            <p><strong>Teléfono:</strong> +56 9 1234 5678</p>
+            <p><strong>Alergias:</strong> Penicilina</p>
+            <p><strong>Institución médica:</strong> Hospital Padre Hurtado</p>
+
+            <ion-button expand="block" color="primary" routerLink="/paginamar1">
+              Ver historial médico
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+</ion-grid>
+
+
+  <ion-card color="light">
+    <ion-card-header>
+      <ion-button fill="outline" size="small">PDF</ion-button>
+    </ion-card-header>
+    <ion-card-content class="ion-text-center">
+      <h1 style="transform: rotate(-20deg);">Ficha médica</h1>
+    </ion-card-content>
+  </ion-card>
+
+    
+</ion-content>
+
+
+
+<!--
+    <ion-row>
+      <ion-col size="12" size-md="6" offset-md="3">
+        <ion-list>
+          <ion-item routerLink="/paginamar2">
+            <ion-label>pagina 8</ion-label>
+          </ion-item>
+          <ion-item routerLink="/paginamar3">
+            <ion-label>pagina 9</ion-label>
+          </ion-item>
+          <ion-item routerLink="/paginamar4">
+            <ion-label>pagina 10</ion-label>
+          </ion-item>
+          <ion-item routerLink="/paginamar5">
+            <ion-label>pagina 11</ion-label>
+          </ion-item>
+          <ion-item routerLink="/paginamar6">
+            <ion-label>pagina 12</ion-label>
+          </ion-item>
+        </ion-list>
+        
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+ -->

@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/app",
+    "types": [
+      "jasmine"
+    ],
+    // AÑADE ESTE BLOQUE AQUÍ
+    "paths": {
+      "@app/*": [
+        "src/app/*"
+      ]
+    }
+  },
+  "files": [
+    "src/main.ts",
+    "src/polyfills.ts"
+  ],
+  "include": [
+    "src/**/*.d.ts"
+  ]
+}

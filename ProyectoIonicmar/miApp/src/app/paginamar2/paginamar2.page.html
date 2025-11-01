@@ -1,0 +1,29 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+        <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-breadcrumbs>
+  <ion-breadcrumb routerLink="/home">Home</ion-breadcrumb>
+  <ion-breadcrumb routerLink="/paginamar2">Consultas</ion-breadcrumb>
+</ion-breadcrumbs>
+
+    <ion-buttons slot="end">
+      <ion-button fill="clear">
+        <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <app-cabeza-perfil></app-cabeza-perfil>
+  
+  <app-lista-archivos
+    titulo="Consultas del Paciente"
+    [consultas]="consultas"
+    [warning]="warning"
+    [botones]="botonesA">
+  </app-lista-archivos>  
+</ion-content>

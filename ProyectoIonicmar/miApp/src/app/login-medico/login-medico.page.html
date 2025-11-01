@@ -1,0 +1,35 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>login Médico</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="form-container">
+  <ion-header collapse="condense">
+      <ion-toolbar>
+        <ion-title size="large">login Médico</ion-title>
+      </ion-toolbar>
+  </ion-header>
+
+  <div class="logo">
+    LOGO
+  </div>
+
+  <h1 class="login-title">Inicio sesión médico</h1>
+
+  <ion-item>
+    <ion-label position="floating">Correo institucional</ion-label>
+    <ion-input type="email" placeholder="ejemplo@correo.com"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Contraseña</ion-label>
+    <ion-input type="password" placeholder="••••••"></ion-input>
+  </ion-item>
+
+  <ion-button [routerLink]="['/home']">
+  Ingresar
+  </ion-button>
+  </div>
+</ion-content>

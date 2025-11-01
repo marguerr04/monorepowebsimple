@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+      <ion-menu-button>
+      </ion-menu-button>
+    </ion-buttons>
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/home">Home</ion-breadcrumb>
+      <ion-breadcrumb routerLink="/datos-emergencia">Datos de emergencia</ion-breadcrumb>
+    </ion-breadcrumbs>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <app-cabeza-perfil></app-cabeza-perfil>
+  <br>
+  <div class="content-header">
+      <h3>Datos de emergencia</h3>
+
+  <ion-list class="bordered-list">
+    <ion-item 
+        button 
+        detail="true" 
+        (click)="mostrarAlergias = !mostrarAlergias"
+        name="Alergias">
+        Alergias
+        <div *ngIf="mostrarAlergias" class="ion-padding">
+        <p><strong>Alergias:</strong> Penicilina, Polvo, Polen</p>
+        <p><strong>Medicamentos:</strong> Ibuprofeno, Paracetamol</p>
+        <p><strong>Alimentos:</strong> Mariscos, Nueces</p></div>
+    </ion-item>
+
+    <ion-item 
+        button 
+        detail="true" 
+        (click)="mostrarCondiciones = !mostrarCondiciones"
+        name="Condiciones">
+        Condiciones médicas
+        <div *ngIf="mostrarCondiciones" class="ion-padding">
+        <p><strong>Dolores:</strong> Rodilla</p>
+        <p><strong>Diabetes:</strong> Tipo 2</p></div>
+    </ion-item>
+
+    <ion-item 
+        button 
+        detail="true" 
+        (click)="mostrarSangre = !mostrarSangre"
+        name="TipoSangre">
+        Tipo de sangre
+        <div *ngIf="mostrarSangre" class="ion-padding">
+        <p><strong>Tipo de sangre:</strong> AB-</p>
+        <p><strong>Puede donar a:</strong> AB+ y AB-</p>
+        <p><strong>Puede recibir:</strong> A-, B-, AB- y O-</p></div>
+    </ion-item>
+  </ion-list>
+
+  <div class="botones-fila">
+    <ion-button class="home-button" routerLink="/home">
+      Home
+    </ion-button>
+  </div><br>
+
+  </div>  
+</ion-content>

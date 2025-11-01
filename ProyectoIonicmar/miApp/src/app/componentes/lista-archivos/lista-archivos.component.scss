@@ -1,0 +1,45 @@
+.list-design {
+    border: 3px solid #218b6f;
+    border-radius: 30px;
+    overflow: hidden;
+    margin: 10px auto;
+    max-width: 700px;
+}
+
+.titulo-lista {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 10px;
+    text-align: center;
+    color: #ffffff;
+}
+
+.warn-box {
+    background: #c92424;
+    border: 2px solid #000000;
+    border-radius: 30px;
+    margin: 15px auto;
+    max-width: 400px;
+    font-weight: bold;
+    color: #000000
+}
+
+.login-button {
+  width: 20%;
+  flex: 1;
+  margin: 5px auto;
+  min-height: 50px;
+  min-width: 150px;
+  --background: linear-gradient(135deg, #30cba1 0%, #9ce3eb 100%);
+  color: #000000;
+  font-weight: bold;
+  border: 3px solid #218b6f;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+* {
+  text-decoration: none !important;
+}

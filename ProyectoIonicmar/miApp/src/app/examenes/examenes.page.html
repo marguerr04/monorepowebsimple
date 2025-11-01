@@ -1,0 +1,23 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/home">Home</ion-breadcrumb>
+      <ion-breadcrumb routerLink="/examenes">Exámenes</ion-breadcrumb>
+    </ion-breadcrumbs>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <app-cabeza-perfil></app-cabeza-perfil>
+
+  <app-lista-archivos
+    titulo="Examenes del Paciente"
+    [consultas]="examenes"
+    [warning]="warning"
+    [botones]="botonesA">
+  </app-lista-archivos>
+</ion-content>

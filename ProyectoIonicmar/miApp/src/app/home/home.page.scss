@@ -1,0 +1,95 @@
+.login-button {
+  position: absolute;
+  top: 7%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  max-width: 300px;
+  min-height: 50px;
+  flex: 1;
+  margin: center;
+  min-width: 150px;
+  --background: #30cba1;
+  --color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-weight: bold;
+  
+  --border-width: 3px;
+  --border-style: solid;
+  --border-color: #218b6f;
+  --border-radius: 20px;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tarjeta-clara {
+    background-color: #666;
+    border: 5px solid #000000;
+    border-radius: 8px;
+    width: 95%;
+    overflow: hidden;
+    margin: auto;
+
+    h1 {
+      color: #ffffff;
+      text-align: center;
+      font-weight: bold;
+    }
+}
+
+.lugar-imagen {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ffffff;
+  border: 5px solid #000000;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  height: fit-content;
+  min-height: 400px;
+  padding: 10px;
+  box-sizing: border-box;
+  
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+}
+
+.modal-con-lengua {
+  --border-radius: 24px 24px 0 0;
+  --max-width: 600px;
+  text-align: center;
+
+  &::part(content) {
+    border: 2px solid #000000;
+    border-bottom: none;
+  }
+}
+
+.modal-contenido {
+  --background: #666;
+  position: relative;
+}
+
+ion-content {
+  --background: var(--ion-color-light);
+  --padding-bottom: 100px;
+}
+
+* {
+  text-decoration: none !important;
+  user-select: none;
+}
+
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}

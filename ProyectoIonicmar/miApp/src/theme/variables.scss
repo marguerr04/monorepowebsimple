@@ -1,0 +1,20 @@
+// For information on how to create your own theme, please see:
+// http://ionicframework.com/docs/theming/
+// En src/theme/variables.scss
+:root {
+  /* Tu color de marca */
+  --ion-color-primary: #00cc99;
+  --ion-color-primary-contrast: #ffffff; /* Texto blanco sobre tu color */
+
+  /* Colores de apoyo profesionales */
+  --ion-color-secondary: #3d88b8;
+  --ion-color-tertiary: #5260ff;
+  --ion-color-success: #2dd36f;
+  --ion-color-warning: #ffc409;
+  --ion-color-danger: #eb445a;
+
+  /* Esquema de grises para fondos y textos */
+  --ion-color-light: #f4f5f8;        
+  --ion-color-medium: #92949c;      
+  --ion-color-dark: #222428;
+}

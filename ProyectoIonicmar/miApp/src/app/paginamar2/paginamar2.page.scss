@@ -1,0 +1,27 @@
+ion-content {
+  --background: var(--ion-color-light);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.perfil-header {
+  --background: var(--ion-color-primary); 
+  color: var(--ion-color-primary-contrast);
+
+  ion-item {
+    --background: transparent;
+  }
+}
+
+.bordered-list {
+    border: 5px solid #00cc99;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 16px;
+}
+
+ion-card {
+    --background:  #00cc99;
+}
+

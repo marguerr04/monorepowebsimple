@@ -1,0 +1,12 @@
+<ion-card-header class="perfil-header">
+  <ion-item lines="none">
+    <ion-avatar slot="start">
+      <img [src]="avatarUrl" />
+    </ion-avatar>
+    <ion-label>
+      <ion-card-title><strong>{{ nombre }}</strong></ion-card-title><br>
+      <ion-card-subtitle><strong>Tipo de sangre: </strong>{{ t_sangre }}</ion-card-subtitle>
+      <ion-card-subtitle><strong>N° Emergencia: </strong>{{ n_emergencia }}</ion-card-subtitle>
+    </ion-label>
+  </ion-item>
+</ion-card-header>

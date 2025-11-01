@@ -1,0 +1,18 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>{{ titulo }}</ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-accordion-group>
+      <ion-accordion *ngFor="let c of consultas">
+        <ion-item slot="header">
+          <ion-label>{{ c.nombre }} - {{ c.fecha }}</ion-label>
+        </ion-item>
+        <div class="ion-padding" slot="content">
+          <p>Detalles adicionales de {{ c.nombre }}</p>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  </ion-card-content>
+</ion-card>

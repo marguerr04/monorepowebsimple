@@ -1,0 +1,17 @@
+<ion-card class="content-header">
+  <ion-card-content>
+    <h3 *ngIf="tituloSeccion" class="titulo-seccion">{{ tituloSeccion }}</h3>
+    
+    <p *ngFor="let dato of datos">
+      <strong>{{ dato.label }}:</strong> {{ dato.valor }}
+    </p><br>
+    
+    <div class="botones-fila">
+      <ion-button class="login-button"
+        *ngFor="let boton of botones"
+        (click)="onBotonClick(boton.ruta)">
+        {{ boton.texto }}
+      </ion-button><br>
+    </div>
+  </ion-card-content>
+</ion-card>

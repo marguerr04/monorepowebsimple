@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>
+      Home
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="6" offset-md="3"> 
+        <app-cabeza-perfil></app-cabeza-perfil>
+
+        <app-bloque-contenido
+          [datos]="datosPaciente"
+          [tituloSeccion]="'Información de Contacto'"
+          [botones]="botonesHome"
+          (botonClic)="navegar($event)">
+        </app-bloque-contenido>
+
+  <ion-modal 
+    [isOpen]="modalAbierto"
+    [breakpoints]="[0.1, 0.9]"
+    [initialBreakpoint]="0.1"
+    [backdropBreakpoint]="0.5"
+    (ionModalDidDismiss)="cerrarModal()"
+    class="modal-con-lengua">
+    
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title class="title">Ficha Médica</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      
+      <ion-content class="modal-contenido">
+        <ion-button class="login-button">
+          Descargar PDF
+        </ion-button>
+
+        <div class="lugar-imagen">
+          <img src="assets/ficha_medica.png" alt="Ficha Médica" />
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-col>
+</ion-row>
+</ion-grid>
+</ion-content>

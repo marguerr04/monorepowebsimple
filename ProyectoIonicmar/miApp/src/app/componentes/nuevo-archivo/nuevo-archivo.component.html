@@ -1,0 +1,116 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ titulo }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" [fullscreen]="true">
+  <div *ngIf="fotoTomada" class="foto-preview">
+    <img [src]="fotoTomada" alt="Foto tomada" class="foto-preview-img">
+    <ion-button 
+      fill="clear" 
+      color="danger" 
+      (click)="eliminarFoto()"
+      class="eliminar-foto">
+      <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div class="botones-fila">
+    <ion-button expand="block" fill="outline" (click)="tomarFoto()" class="botones-imagen">
+      <ion-icon name="camera-outline" slot="start"></ion-icon>
+      Tomar una Foto
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" (click)="seleccionarDeGaleria()" class="botones-imagen">
+      <ion-icon name="images-outline" slot="start"></ion-icon>
+      Galería
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" (click)="openFilePicker()" class="botones-imagen">
+      <ion-icon name="folder-outline" slot="start"></ion-icon>
+      Buscar Archivos
+    </ion-button>
+  </div><br>
+
+  <br>
+  <ion-item class="espacio-fecha">
+    <ion-input
+      label="Fecha {{ tipo === 'consulta' ? 'consulta' : 'examen' }}:" 
+      type="date" 
+      [(ngModel)]="fecha"
+      required>
+    </ion-input>
+  </ion-item><br>
+
+  <ion-item class="texto-contenedor">
+    <ion-select class="espacio-lista"
+      label="Centro médico:" 
+      [(ngModel)]="centroMedico"
+      placeholder="Seleccione el centro médico"
+      interface="action-sheet">
+      
+      <ion-select-option
+        *ngFor="let centro of centrosMedicos" 
+        [value]="centro.nombrecentro">
+        {{ centro.nombrecentro }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <div *ngIf="mostrarCampoConsulta()">
+    <ion-item class="texto-contenedor">
+      <ion-textarea class="texto-motivo"
+        label="Motivo de la consulta:"
+        [(ngModel)]="motivoConsulta"
+        placeholder="Describa el motivo de la consulta"
+        rows="4"
+        required>
+      </ion-textarea>
+    </ion-item>
+  </div>
+
+  <div *ngIf="mostrarCampoExamen()">
+    <ion-item class="texto-contenedor">
+      <ion-select class="espacio-lista" 
+        label="Tipo de examen:" 
+        [(ngModel)]="tipoExamen"
+        placeholder="Seleccione el tipo de examen"
+        interface="action-sheet"
+        required>
+        <ion-select-option 
+          *ngFor="let tipo of tiposExamen" 
+          [value]="tipo.nombre">
+          {{ tipo.nombre }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item class="texto-contenedor">
+      <ion-textarea class="texto-motivo"
+        label="Resultado:"
+        [(ngModel)]="resultadoExamen"
+        placeholder="Describa los resultados del examen"
+        rows="3">
+      </ion-textarea>
+    </ion-item>
+  </div>
+
+  <input type="file" hidden #fileInput (change)="onFileSelected($event)" accept=".pdf,image/*"/>
+
+  <div class="botones-fila2">
+    <ion-button class="boton-envio"
+      expand="block"
+      (click)="guardar()" 
+      [disabled]="!fecha">
+      {{ textoBotonGuardar }} {{ tipo === 'consulta' ? 'consulta' : 'examen' }}
+    </ion-button>
+
+    <ion-button class="boton-envio"
+      expand="block" 
+      color="danger" 
+      (click)="cancelar()">
+      Cancelar
+    </ion-button>
+  </div>
+</ion-content>
