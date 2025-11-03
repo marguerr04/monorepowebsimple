@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NuevoArchivoComponent } from '@app/componentes/nuevo-archivo/nuevo-archivo.component';
+import { BackendService } from '@app/core/servicios/backend.service';
 
 @Component({
   selector: 'app-nuevaconsulta',
@@ -13,21 +14,27 @@ import { NuevoArchivoComponent } from '@app/componentes/nuevo-archivo/nuevo-arch
 
 export class NuevaconsultaPage {
   
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private backendService: BackendService
+  ) {}
 
   onArchivoGuardado(datos: any) {
-    console.log('📋 Consulta guardada:', datos);
+    console.log('📋 Consulta a guardar:', datos);
     
-    // Aquí puedes enviar los datos al backend
-    // Ejemplo:
-    // this.backendService.guardarConsulta(datos).subscribe(...)
-    
-    // Redirigir a la página de consultas después de guardar
-    this.router.navigate(['/paginamar2']);
+    this.backendService.guardarConsulta(datos).subscribe({
+      next: (response) => {
+        console.log('✅ Consulta guardada en BD:', response);
+        this.router.navigate(['/paginamar2']);
+      },
+      error: (error) => {
+        console.error('❌ Error guardando consulta:', error);
+        alert('Error al guardar la consulta: ' + error.message);
+      }
+    });
   }
 
   onCancelado() {
-    // Redirigir a la página de consultas sin guardar
     this.router.navigate(['/paginamar2']);
   }
 }

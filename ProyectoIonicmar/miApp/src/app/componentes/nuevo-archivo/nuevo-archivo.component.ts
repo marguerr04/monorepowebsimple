@@ -144,42 +144,55 @@ export class NuevoArchivoComponent {
     this.fileInput.nativeElement.click();
   }
 
-  async guardar() {
-    if (!this.fecha) {
-      await this.mostrarMensaje('Error', 'Por favor selecciona una fecha');
+async guardar() {
+  if (!this.fecha) {
+    await this.mostrarMensaje('Error', 'Por favor selecciona una fecha');
+    return;
+  }
+
+  if (this.tipo === 'consulta') {
+    if (!this.motivoConsulta.trim()) {
+      await this.mostrarMensaje('Error', 'Por favor ingresa el motivo de la consulta');
       return;
     }
-
-    if (this.tipo === 'consulta') {
-      if (!this.motivoConsulta.trim()) {
-        await this.mostrarMensaje('Error', 'Por favor ingresa el motivo de la consulta');
-        return;
-      }
-    } else if (this.tipo === 'examen') {
-      if (!this.tipoExamen.trim()) {
-        await this.mostrarMensaje('Error', 'Por favor ingresa el tipo de examen');
-        return;
-      }
+  } else if (this.tipo === 'examen') {
+    if (!this.tipoExamen.trim()) {
+      await this.mostrarMensaje('Error', 'Por favor ingresa el tipo de examen');
+      return;
     }
-
-    const datos = {
-      tipo: this.tipo,
-      fecha: this.fecha,
-      centroMedico: this.centroMedico,
-      archivo: this.archivoSeleccionado,
-      foto: this.fotoTomada,
-      
-      motivoConsulta: this.motivoConsulta,
-      tipoExamen: this.tipoExamen,
-      resultadoExamen: this.resultadoExamen
-    };
-
-    console.log('Guardando:', datos);
-    
-    this.archivoGuardado.emit(datos);
-    
-    await this.mostrarMensaje('Éxito', `${this.tipo === 'consulta' ? 'Consulta' : 'Examen'} guardado correctamente`);
   }
+
+  const pacienteGuardado = localStorage.getItem('pacienteActual');
+  if (!pacienteGuardado) {
+    await this.mostrarMensaje('Error', 'No se encontró sesión de paciente');
+    return;
+  }
+
+  const paciente = JSON.parse(pacienteGuardado);
+  const pacienteId = paciente.id;
+
+  const datos = {
+    tipo: this.tipo,
+    fecha: this.fecha,
+    centroMedico: this.centroMedico,
+    
+    motivoConsulta: this.motivoConsulta,
+    tipoExamen: this.tipoExamen,
+    resultadoExamen: this.resultadoExamen,
+    
+    pacienteId: pacienteId,
+    
+    tieneArchivo: !!this.archivoSeleccionado,
+    tieneFoto: !!this.fotoTomada,
+    nombreArchivo: this.archivoSeleccionado?.name || null
+  };
+
+  console.log('Guardando datos básicos:', datos);
+  
+  this.archivoGuardado.emit(datos);
+  
+  await this.mostrarMensaje('Éxito', `${this.tipo === 'consulta' ? 'Consulta' : 'Examen'} guardado correctamente`);
+}
 
   cancelar() {
     this.cancelado.emit();
@@ -189,7 +202,7 @@ export class NuevoArchivoComponent {
     this.fotoTomada = null;
   }
 
-  private async mostrarMensaje(header: string, message: string) {
+  protected async mostrarMensaje(header: string, message: string) {
     const alert = await this.alertController.create({
       header,
       message,

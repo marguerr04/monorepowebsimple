@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonButton } from '@ionic/angular/standalone';
 import { NuevoArchivoComponent } from '@app/componentes/nuevo-archivo/nuevo-archivo.component';
+import { BackendService } from '@app/core/servicios/backend.service';
 
 @Component({
   selector: 'app-nuevoexamen',
@@ -14,17 +15,24 @@ import { NuevoArchivoComponent } from '@app/componentes/nuevo-archivo/nuevo-arch
 
 export class NuevoexamenPage {
   
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private backendService: BackendService
+  ) {}
 
   onArchivoGuardado(datos: any) {
-    console.log('📋 Consulta guardada:', datos);
+    console.log('🔬 Examen a guardar:', datos);
     
-    // Aquí puedes enviar los datos al backend
-    // Ejemplo:
-    // this.backendService.guardarConsulta(datos).subscribe(...)
-    
-    // Redirigir a la página de consultas después de guardar
-    this.router.navigate(['/paginamar2']);
+    this.backendService.guardarExamen(datos).subscribe({
+      next: (response) => {
+        console.log('✅ Examen guardado en BD:', response);
+        this.router.navigate(['/examenes']);
+      },
+      error: (error) => {
+        console.error('❌ Error guardando examen:', error);
+        alert('Error al guardar el examen: ' + error.message);
+      }
+    });
   }
 
   onCancelado() {

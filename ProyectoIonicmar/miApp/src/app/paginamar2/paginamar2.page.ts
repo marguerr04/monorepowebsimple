@@ -22,7 +22,6 @@ export class Paginamar2Page implements OnInit {
 
   botonesA = [
   { texto: 'Añadir consulta', ruta: '/nuevaconsulta' },
-  { texto: 'Gestionar consultas', ruta: '/gestion-consultas' },
   { texto: 'Home', ruta: '/home', },
   ];
 
