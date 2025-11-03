@@ -22,7 +22,48 @@ class FichasService {
     }
   }
 
-  // ✅ MÉTODOS PARA EL CRUD COMPLETO
+  // Método para obtener detalle completo de ficha
+  Future<Map<String, dynamic>> fetchFichaDetalle(int idFicha) async {
+    final uri = Uri.parse('$baseUrl/api/fichas/$idFicha/resumen');
+
+    try {
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Error ${response.statusCode} al obtener detalle');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión al obtener detalle: $e');
+    }
+  }
+
+  // ✅ NUEVO MÉTODO: Actualizar ficha completa
+  Future<bool> updateFicha(int idFicha, Map<String, dynamic> data) async {
+    final uri = Uri.parse('$baseUrl/api/fichas/$idFicha');
+
+    try {
+      final response = await http.put(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Ficha actualizada correctamente');
+        return true;
+      } else {
+        print('❌ Error al actualizar ficha: ${response.statusCode} - ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error de conexión al actualizar ficha: $e');
+      return false;
+    }
+  }
+
+  // MÉTODOS PARA EL CRUD COMPLETO (se mantienen)
   Future<FichaMedica> crearFicha(Map<String, dynamic> datos) async {
     final uri = Uri.parse("$baseUrl/api/fichas");
     final response = await http.post(
@@ -38,18 +79,22 @@ class FichasService {
     }
   }
 
-  Future<FichaMedica> actualizarFicha(int id, Map<String, dynamic> datos) async {
+  Future<FichaMedica> actualizarNombreFicha(int id, String nuevoNombre) async {
     final uri = Uri.parse("$baseUrl/api/fichas/$id");
-    final response = await http.put(
+    
+    print('✏️ [Service] Actualizando nombre de ficha $id: $nuevoNombre');
+    
+    final response = await http.patch(
       uri,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(datos),
+      body: jsonEncode({'nombre': nuevoNombre}),
     );
 
     if (response.statusCode == 200) {
-      return FichaMedica.fromJson(jsonDecode(response.body));
+      final jsonResponse = jsonDecode(response.body);
+      return FichaMedica.fromJson(jsonResponse['ficha'] ?? jsonResponse);
     } else {
-      throw Exception('Error ${response.statusCode} al actualizar ficha');
+      throw Exception('Error ${response.statusCode}: ${response.body}');
     }
   }
 

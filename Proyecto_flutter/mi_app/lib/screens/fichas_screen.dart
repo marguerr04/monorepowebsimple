@@ -3,8 +3,8 @@ import '../widgets/layout/admin_sidebar.dart';
 import '../widgets/fichas/fichas_data_table.dart';
 import '../widgets/fichas/paginations_controls.dart';
 import '../utils/app_colors.dart';
-import '../services/fichas_service.dart';
-import '../models/ficha_medica.model.dart'; 
+import '../services/fichas_service.dart'; // ✅ Servicio CORRECTO
+import '../models/ficha_medica.model.dart';
 
 class FichasScreen extends StatefulWidget {
   const FichasScreen({super.key});
@@ -17,7 +17,7 @@ class _FichasScreenState extends State<FichasScreen> {
   // --- Estados EXISTENTES ---
   int _currentPage = 1;
   final int _itemsPerPage = 10;
-  int _totalItems = 0; // ✅ CAMBIO: Ahora será dinámico
+  int _totalItems = 0;
   late int _totalPages;
   String? _selectedComuna;
   String? _selectedPatologia;
@@ -26,8 +26,10 @@ class _FichasScreenState extends State<FichasScreen> {
   final TextEditingController _edadHastaController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
 
-  // ✅ NUEVOS ESTADOS para datos reales
+  // ✅ CORREGIDO: Servicio de FICHAS, no de consultas
   final FichasService _fichasService = FichasService();
+  
+  // ✅ CORREGIDO: Variables que faltaban
   List<FichaMedica> _fichas = [];
   bool _isLoading = true;
   String _errorMessage = '';
@@ -36,10 +38,10 @@ class _FichasScreenState extends State<FichasScreen> {
   void initState() {
     super.initState();
     _totalPages = (_totalItems / _itemsPerPage).ceil();
-    _loadFichas(); // ✅ NUEVO: Cargar datos reales al iniciar
+    _loadFichas();
   }
 
-  // ✅ NUEVO: Método para cargar fichas del backend
+  // ✅ CORREGIDO: Método para cargar fichas
   Future<void> _loadFichas() async {
     setState(() {
       _isLoading = true;
@@ -81,7 +83,6 @@ class _FichasScreenState extends State<FichasScreen> {
     setState(() {
       print('Filtros aplicados...');
       _currentPage = 1;
-      // Por ahora recargamos todos los datos
       _loadFichas();
     });
   }
@@ -100,7 +101,7 @@ class _FichasScreenState extends State<FichasScreen> {
     });
   }
 
-  // ✅ NUEVO: Método para obtener los datos de la página actual
+  // ✅ CORREGIDO: Getter para página actual
   List<FichaMedica> get _currentPageItems {
     final startIndex = (_currentPage - 1) * _itemsPerPage;
     final endIndex = startIndex + _itemsPerPage;
@@ -117,7 +118,7 @@ class _FichasScreenState extends State<FichasScreen> {
     return Scaffold(
       body: Row(
         children: [
-          // Sidebar (sin cambios)
+          // Sidebar
           Expanded(
             flex: 2,
             child: AdminSidebar(
@@ -140,7 +141,7 @@ class _FichasScreenState extends State<FichasScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- 1. Encabezado y Botones de Acción (sin cambios) ---
+                  // --- 1. Encabezado y Botones de Acción ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -164,7 +165,7 @@ class _FichasScreenState extends State<FichasScreen> {
                               foregroundColor: theme.primaryColor,
                               side: BorderSide(color: theme.primaryColor),
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                               shape: RoundedRectangleBorder(
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
@@ -175,7 +176,7 @@ class _FichasScreenState extends State<FichasScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // --- 2. Panel de Búsqueda y Filtros (sin cambios) ---
+                  // --- 2. Panel de Búsqueda y Filtros ---
                   Container(
                     padding: const EdgeInsets.all(20.0),
                     decoration: BoxDecoration(
@@ -194,12 +195,12 @@ class _FichasScreenState extends State<FichasScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextField(
-                           controller: _searchController,
+                          controller: _searchController,
                           decoration: const InputDecoration(
                             hintText: 'Buscar por ID Paciente, Nombre o Apellido...',
                             prefixIcon: Icon(Icons.search),
                           ),
-                           onSubmitted: (_) => _applyFilters(),
+                          onSubmitted: (_) => _applyFilters(),
                         ),
                         const SizedBox(height: 20),
 
@@ -220,14 +221,14 @@ class _FichasScreenState extends State<FichasScreen> {
                               items: ['Diabetes', 'Hipertensión', 'Ansiedad', 'Obesidad', 'Respiratoria'],
                               onChanged: (val) => setState(() => _selectedPatologia = val),
                             ),
-                             _buildDropdown<String>(
+                            _buildDropdown<String>(
                               hint: 'Establecimiento',
                               value: _selectedEstablecimiento,
                               items: ['Clínica A', 'Hospital B', 'Centro Salud C'],
                               onChanged: (val) => setState(() => _selectedEstablecimiento = val),
                             ),
                             Row(
-                               mainAxisSize: MainAxisSize.min,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 SizedBox(
                                   width: 100,
@@ -261,9 +262,9 @@ class _FichasScreenState extends State<FichasScreen> {
                                 const SizedBox(width: 10),
                                 TextButton(
                                   onPressed: _clearFilters,
-                                   style: TextButton.styleFrom(
-                                     foregroundColor: AppColors.gris,
-                                   ),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppColors.gris,
+                                  ),
                                   child: const Text('Limpiar'),
                                 ),
                               ],
@@ -275,7 +276,7 @@ class _FichasScreenState extends State<FichasScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // --- 3. Tabla de Datos - ACTUALIZADA ---
+                  // --- 3. Tabla de Datos ---
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : _errorMessage.isNotEmpty
@@ -339,12 +340,14 @@ class _FichasScreenState extends State<FichasScreen> {
                                       ),
                                     ],
                                   ),
-                                  // ✅ CAMBIO: Pasa las fichas reales
-                                  child: FichasDataTable(fichas: _currentPageItems),
+                                  child: FichasDataTable(
+                                    fichas: _currentPageItems,
+                                    onRefresh: _loadFichas,
+                                  ),
                                 ),
                   const SizedBox(height: 20),
 
-                  // --- 4. Controles de Paginación - ACTUALIZADA ---
+                  // --- 4. Controles de Paginación ---
                   if (!_isLoading && _fichas.isNotEmpty)
                     Align(
                       alignment: Alignment.centerRight,
@@ -365,7 +368,7 @@ class _FichasScreenState extends State<FichasScreen> {
     );
   }
 
-  // Helper para Dropdowns (sin cambios)
+  // Helper para Dropdowns
   Widget _buildDropdown<T>({
     required String hint,
     required T? value,

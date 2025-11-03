@@ -6,6 +6,9 @@ import 'screens/perfil.dart';
 import 'screens/test_connection_page.dart';
 import 'screens/fichas_screen.dart';
 import 'screens/pokeapi_screen.dart'; // Mantienes esta si aún la usas
+
+import 'screens/ficha_edit_screen.dart';
+import 'models/ficha_medica.model.dart';
 // Importa tu paleta de colores
 import 'utils/app_colors.dart';
 
@@ -120,6 +123,7 @@ class ElMedicoApp extends StatelessWidget {
         '/test-connection': (context) => const TestConnectionPage(),
         '/fichas': (context) => const FichasScreen(),
         '/pokeapi': (context) => const PokeApiScreen(), // Mantienes esta si la usas
+        
         // '/main-layout': (context) => const MainLayoutScreen(), // Si usas el layout contenedor
       },
     );
