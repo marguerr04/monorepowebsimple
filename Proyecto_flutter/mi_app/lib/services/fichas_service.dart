@@ -129,4 +129,47 @@ Future<FichaDetallada> getFichaDetallada(String fichaId) async {
       throw Exception('Error ${response.statusCode} al eliminar ficha');
     }
   }
+
+
+  Future<void> updateConsultaCompleto(
+  int consultaId, 
+  double pesoPaciente, 
+  double alturaPaciente, 
+  String diagnosticoTexto // Este campo es solo informativo
+) async {
+  try {
+    final uri = Uri.parse("$baseUrl/api/consulta/$consultaId");
+    
+    print('🔄 Enviando datos al backend:');
+    print('  - pesoPaciente: $pesoPaciente');
+    print('  - alturaPaciente: $alturaPaciente');
+    print('  - diagnosticos: []'); // Por ahora array vacío
+    
+    final response = await http.put(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'pesoPaciente': pesoPaciente,
+        'alturaPaciente': alturaPaciente,
+        'diagnosticos': [], // ✅ Array vacío por ahora
+      }),
+    );
+
+    print('📡 Respuesta del backend: ${response.statusCode}');
+    print('📦 Body: ${response.body}');
+
+    if (response.statusCode != 200) {
+      throw Exception('Error ${response.statusCode} al actualizar consulta: ${response.body}');
+    }
+  } catch (e) {
+    print('💥 Error completo: $e');
+    throw Exception('Error de conexión: $e');
+  }
+}
+
+
+
+
+
+
 }

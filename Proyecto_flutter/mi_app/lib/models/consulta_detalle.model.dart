@@ -6,6 +6,8 @@ class ConsultaDetalle {
   final String tipoConsulta;
   final String nombreMedico;
   final String? diagnostico;
+  final double? pesoPaciente;  
+  final double? alturaPaciente;
 
   ConsultaDetalle({
     required this.id,
@@ -13,6 +15,8 @@ class ConsultaDetalle {
     required this.tipoConsulta,
     required this.nombreMedico,
     this.diagnostico,
+    this.pesoPaciente,         
+    this.alturaPaciente,
   });
 
   factory ConsultaDetalle.fromJson(Map<String, dynamic> json) {
@@ -22,6 +26,17 @@ class ConsultaDetalle {
       tipoConsulta: json['tipoConsulta'] ?? '',
       nombreMedico: json['nombreMedico'] ?? '',
       diagnostico: json['diagnostico'],
+      pesoPaciente: json['pesoPaciente'] != null 
+          ? double.tryParse(json['pesoPaciente'].toString()) 
+          : null, 
+      alturaPaciente: json['alturaPaciente'] != null 
+          ? double.tryParse(json['alturaPaciente'].toString()) 
+          : null, 
+
+
+
+
+      
     );
   }
 
