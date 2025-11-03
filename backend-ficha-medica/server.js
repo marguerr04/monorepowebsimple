@@ -411,6 +411,7 @@ app.get('/api/fichas-resumen', async (req, res) => {
       )
       SELECT
         fm.id AS "idFicha",
+        c.id AS "idConsulta",
         p.nombre AS "nombrePaciente",
         p.rut AS "idPaciente",
         EXTRACT(YEAR FROM AGE(p.fechanac))::INT AS "edad",
@@ -438,5 +439,226 @@ app.get('/api/fichas-resumen', async (req, res) => {
   } catch (error) {
     console.error('💥 ERROR en /api/fichas-resumen:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+// ============================================
+// === ENDPOINT 4: Obtener Detalles de Consulta (READ - Para Editar)
+// ============================================
+// Proósito: Obtener los datos de UNA sola consulta para rellenar
+// el formulario de EDICIÓN.
+app.get('/api/consulta/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(`🔍 [Flutter] Petición de detalle para consulta ID: ${id}`);
+  
+  try {
+    const query = `
+      SELECT
+        c.id AS "consultaId",
+        c.fecha,
+        c.pesoPaciente,
+        c.alturaPaciente,
+        p.nombre AS "pacienteNombre",
+        p.rut AS "pacienteRut",
+        m.nombre AS "medicoNombre",
+        c.medico_id AS "medicoId",
+        COALESCE(
+          (
+            SELECT json_agg(json_build_object('id', d.id, 'nombre', d.nombre))
+            FROM diagnostico_consulta dc
+            JOIN diagnostico d ON dc.diagnostico_id = d.id
+            WHERE dc.consulta_id = c.id
+          ),
+          '[]'::json
+        ) AS "diagnosticos"
+      FROM consulta c
+      LEFT JOIN ficha_medica fm ON c.ficha_medica_id = fm.id
+      LEFT JOIN paciente p ON fm.paciente_id = p.id
+      LEFT JOIN medico m ON c.medico_id = m.id
+      WHERE c.id = $1;
+    `;
+    
+    const result = await db.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      console.warn(`⚠️ [Flutter] Consulta ID: ${id} no encontrada.`);
+      return res.status(404).json({ error: 'Consulta no encontrada' });
+    }
+
+    console.log(`✅ [Flutter] Detalle de consulta ID: ${id} encontrado.`);
+    res.json(result.rows[0]); 
+
+  } catch (error) {
+    console.error(`💥 ERROR en GET /api/consulta/${id}:`, error);
+    res.status(500).json({ error: 'Error al obtener detalle de la consulta', details: error.message });
+  }
+});
+
+
+
+
+
+// ============================================
+// === ENDPOINT 5: Actualizar Consulta (UPDATE - Para Editar)
+// ============================================
+// Propósito: Actualizar el peso, altura y/o diagnósticos
+// de UNA sola consulta desde el formulario de EDICIÓN.
+app.put('/api/consulta/:id', async (req, res) => {
+  const { id } = req.params;
+  const { pesoPaciente, alturaPaciente, diagnosticos } = req.body; 
+
+  console.log(`🔄 [Flutter] Petición de ACTUALIZACIÓN para consulta ID: ${id}`);
+  console.log('Datos recibidos:', req.body);
+  
+  if (pesoPaciente == null || alturaPaciente == null || !Array.isArray(diagnosticos)) {
+    console.warn(`⚠️ [Flutter] Datos incompletos para actualizar consulta ID: ${id}`);
+    return res.status(400).json({ 
+      error: 'Datos incompletos. Se requiere pesoPaciente, alturaPaciente y un array de diagnosticos (aunque esté vacío []).' 
+    });
+  }
+  
+  try {
+    await db.query('BEGIN');
+
+    // --- PASO 1: Actualizar la tabla 'consulta' ---
+    const updateConsultaQuery = `
+      UPDATE consulta
+      SET pesoPaciente = $1, alturaPaciente = $2
+      WHERE id = $3
+      RETURNING *;
+    `;
+    const consultaResult = await db.query(updateConsultaQuery, [pesoPaciente, alturaPaciente, id]); 
+
+    if (consultaResult.rows.length === 0) {
+      throw new Error('Consulta no encontrada para actualizar');
+    }
+
+    // --- PASO 2: Borrar TODOS los diagnósticos antiguos de esa consulta ---
+    const deleteDiagsQuery = `
+      DELETE FROM diagnostico_consulta
+      WHERE consulta_id = $1;
+    `;
+    await db.query(deleteDiagsQuery, [id]); 
+
+    // --- PASO 3: Insertar los nuevos diagnósticos ---
+    if (diagnosticos.length > 0) {
+      const values = diagnosticos.map((diagId, index) => 
+        `($1, $${index + 2})`
+      ).join(', ');
+      
+      const insertDiagsQuery = `
+        INSERT INTO diagnostico_consulta (consulta_id, diagnostico_id)
+        VALUES ${values};
+      `;
+      
+      const queryParams = [id, ...diagnosticos.map(diagId => parseInt(diagId, 10))];
+      await db.query(insertDiagsQuery, queryParams);
+    }
+    
+    await db.query('COMMIT'); 
+    
+    console.log(`✅ [Flutter] Consulta ID: ${id} actualizada exitosamente.`);
+    res.json(consultaResult.rows[0]);
+
+  } catch (error) {
+    await db.query('ROLLBACK');
+    console.error(`💥 ERROR en PUT /api/consulta/${id}:`, error);
+    res.status(500).json({ error: 'Error al actualizar la consulta (transacción revertida)', details: error.message });
+  }
+});
+
+
+
+
+
+
+// ==========================================================
+// === ENDPOINT 6: Resumen Detallado de Ficha (READ - Para "Ver Ficha")
+// ==========================================================
+// Propósito: Obtener el historial de un paciente (consultas, exámenes)
+// para la pantalla de "Ver Ficha" (el ícono del ojo).
+app.get('/api/ficha/:id/resumen-detallado', async (req, res) => {
+  const { id } = req.params; // Este 'id' es el ficha_medica_id
+  console.log(`📊 [Flutter] Petición de Resumen Detallado para Ficha ID: ${id}`);
+
+  try {
+    // 1. Obtener datos del paciente
+    const pacienteQuery = `
+      SELECT
+        p.nombre, 
+        p.rut, 
+        EXTRACT(YEAR FROM AGE(p.fechanac))::INT AS "edad", 
+        p.sexo, 
+        p.telefono
+      FROM paciente p
+      JOIN ficha_medica fm ON p.id = fm.paciente_id
+      WHERE fm.id = $1;
+    `;
+
+    // 2. Obtener consultas recientes (con sus diagnósticos agrupados)
+    const consultasQuery = `
+      SELECT
+        c.id,
+        c.fecha,
+        COALESCE(m.nombre, 'Sin médico') AS "medico",
+        COALESCE(
+          (
+            -- Agrupa todos los nombres de diagnósticos de ESTA consulta en un array
+            SELECT json_agg(d.nombre)
+            FROM diagnostico_consulta dc
+            JOIN diagnostico d ON dc.diagnostico_id = d.id
+            WHERE dc.consulta_id = c.id
+          ),
+          '[]'::json -- Devuelve '[]' si no tiene diagnósticos
+        ) AS "diagnosticos"
+      FROM consulta c
+      LEFT JOIN medico m ON c.medico_id = m.id
+      WHERE c.ficha_medica_id = $1
+      ORDER BY c.fecha DESC
+      LIMIT 5; -- Traemos las últimas 5
+    `;
+
+    // 3. Obtener exámenes recientes
+    const examenesQuery = `
+      SELECT
+        e.id,
+        e.fecha,
+        te.nombre AS "tipoExamen",
+        COALESCE(s.dirSucurs, 'Sin sucursal') AS "sucursal"
+      FROM examen e
+      LEFT JOIN tipo_examen te ON e.tipo_examen_id = te.id
+      LEFT JOIN sucursal s ON e.sucursal_id = s.id
+      WHERE e.ficha_medica_id = $1
+      ORDER BY e.fecha DESC
+      LIMIT 5; -- Traemos los últimos 5
+    `;
+
+    // Ejecutamos las 3 consultas en paralelo para mayor eficiencia
+    const [pacienteResult, consultasResult, examenesResult] = await Promise.all([
+      db.query(pacienteQuery, [id]),
+      db.query(consultasQuery, [id]),
+      db.query(examenesQuery, [id])
+    ]);
+
+    if (pacienteResult.rows.length === 0) {
+      console.warn(`⚠️ [Flutter] Ficha ID: ${id} no encontrada.`);
+      return res.status(404).json({ error: 'Ficha médica no encontrada' });
+    }
+
+    // Combinamos todo en una sola respuesta
+    const respuesta = {
+      paciente: pacienteResult.rows[0],
+      consultasRecientes: consultasResult.rows,
+      examenesRecientes: examenesResult.rows
+    };
+
+    console.log(`✅ [Flutter] Resumen detallado para Ficha ID: ${id} generado.`);
+    res.json(respuesta);
+
+  } catch (error) {
+    console.error(`💥 ERROR en GET /api/ficha/${id}/resumen-detallado:`, error);
+    res.status(500).json({ error: 'Error al obtener resumen detallado', details: error.message });
   }
 });

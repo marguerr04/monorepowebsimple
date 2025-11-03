@@ -61,7 +61,7 @@ class _DashboardPageState extends State<DashboardPage> {
       print("   reprobados: ${primerStats.reprobados} (tipo: ${primerStats.reprobados.runtimeType})");
       print("   lastUpdated: ${primerStats.lastUpdated} (tipo: ${primerStats.lastUpdated.runtimeType})");
     } else {
-      print("⚠️  Estadísticas vacías");
+      print(" Estadísticas vacías");
     }
 
     setState(() {

@@ -4,7 +4,12 @@ import '../widgets/fichas/fichas_data_table.dart';
 import '../widgets/fichas/paginations_controls.dart';
 import '../utils/app_colors.dart';
 import '../services/fichas_service.dart';
-import '../models/ficha_medica.model.dart'; 
+import '../models/ficha_medica.model.dart';
+import './ficha_detalle_screen.dart';
+import './consulta_edit_screen.dart';
+import '../widgets/fichas/ficha_detail_dialog.dart';
+import '../widgets/fichas/consulta_edit_dialog.dart';
+
 
 class FichasScreen extends StatefulWidget {
   const FichasScreen({super.key});
@@ -14,10 +19,9 @@ class FichasScreen extends StatefulWidget {
 }
 
 class _FichasScreenState extends State<FichasScreen> {
-  // --- Estados EXISTENTES ---
   int _currentPage = 1;
   final int _itemsPerPage = 10;
-  int _totalItems = 0; // ✅ CAMBIO: Ahora será dinámico
+  int _totalItems = 0;
   late int _totalPages;
   String? _selectedComuna;
   String? _selectedPatologia;
@@ -26,7 +30,6 @@ class _FichasScreenState extends State<FichasScreen> {
   final TextEditingController _edadHastaController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
 
-  // ✅ NUEVOS ESTADOS para datos reales
   final FichasService _fichasService = FichasService();
   List<FichaMedica> _fichas = [];
   bool _isLoading = true;
@@ -36,10 +39,9 @@ class _FichasScreenState extends State<FichasScreen> {
   void initState() {
     super.initState();
     _totalPages = (_totalItems / _itemsPerPage).ceil();
-    _loadFichas(); // ✅ NUEVO: Cargar datos reales al iniciar
+    _loadFichas();
   }
 
-  // ✅ NUEVO: Método para cargar fichas del backend
   Future<void> _loadFichas() async {
     setState(() {
       _isLoading = true;
@@ -81,7 +83,6 @@ class _FichasScreenState extends State<FichasScreen> {
     setState(() {
       print('Filtros aplicados...');
       _currentPage = 1;
-      // Por ahora recargamos todos los datos
       _loadFichas();
     });
   }
@@ -100,7 +101,6 @@ class _FichasScreenState extends State<FichasScreen> {
     });
   }
 
-  // ✅ NUEVO: Método para obtener los datos de la página actual
   List<FichaMedica> get _currentPageItems {
     final startIndex = (_currentPage - 1) * _itemsPerPage;
     final endIndex = startIndex + _itemsPerPage;
@@ -110,6 +110,35 @@ class _FichasScreenState extends State<FichasScreen> {
     );
   }
 
+  void _onViewFicha(String fichaId) {
+    print('Ver Ficha ID: $fichaId');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FichaDetalleScreen(fichaId: fichaId),
+      ),
+    );
+  }
+
+  void _onEditConsulta(int consultaId) {
+    print('Editar Consulta ID: $consultaId');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ConsultaEditScreen(consultaId: consultaId),
+      ),
+    ).then((dataEditada) {
+      if (dataEditada == true) {
+        print("Recargando fichas después de editar...");
+        _loadFichas();
+      }
+    });
+  }
+
+  void _onDeleteFicha(String fichaId) {
+    print('Borrar Ficha ID: $fichaId');
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -117,7 +146,6 @@ class _FichasScreenState extends State<FichasScreen> {
     return Scaffold(
       body: Row(
         children: [
-          // Sidebar (sin cambios)
           Expanded(
             flex: 2,
             child: AdminSidebar(
@@ -131,8 +159,6 @@ class _FichasScreenState extends State<FichasScreen> {
               },
             ),
           ),
-
-          // Área de Contenido Principal
           Expanded(
             flex: 8,
             child: SingleChildScrollView(
@@ -140,13 +166,12 @@ class _FichasScreenState extends State<FichasScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- 1. Encabezado y Botones de Acción (sin cambios) ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Gestión de Fichas Médicas',
-                         style: theme.textTheme.titleLarge?.copyWith(fontSize: 26),
+                        style: theme.textTheme.titleLarge?.copyWith(fontSize: 26),
                       ),
                       Row(
                         children: [
@@ -164,7 +189,7 @@ class _FichasScreenState extends State<FichasScreen> {
                               foregroundColor: theme.primaryColor,
                               side: BorderSide(color: theme.primaryColor),
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                               shape: RoundedRectangleBorder(
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
@@ -174,8 +199,6 @@ class _FichasScreenState extends State<FichasScreen> {
                     ],
                   ),
                   const SizedBox(height: 30),
-
-                  // --- 2. Panel de Búsqueda y Filtros (sin cambios) ---
                   Container(
                     padding: const EdgeInsets.all(20.0),
                     decoration: BoxDecoration(
@@ -194,15 +217,14 @@ class _FichasScreenState extends State<FichasScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextField(
-                           controller: _searchController,
+                          controller: _searchController,
                           decoration: const InputDecoration(
                             hintText: 'Buscar por ID Paciente, Nombre o Apellido...',
                             prefixIcon: Icon(Icons.search),
                           ),
-                           onSubmitted: (_) => _applyFilters(),
+                          onSubmitted: (_) => _applyFilters(),
                         ),
                         const SizedBox(height: 20),
-
                         Wrap(
                           spacing: 20.0,
                           runSpacing: 15.0,
@@ -220,14 +242,14 @@ class _FichasScreenState extends State<FichasScreen> {
                               items: ['Diabetes', 'Hipertensión', 'Ansiedad', 'Obesidad', 'Respiratoria'],
                               onChanged: (val) => setState(() => _selectedPatologia = val),
                             ),
-                             _buildDropdown<String>(
+                            _buildDropdown<String>(
                               hint: 'Establecimiento',
                               value: _selectedEstablecimiento,
                               items: ['Clínica A', 'Hospital B', 'Centro Salud C'],
                               onChanged: (val) => setState(() => _selectedEstablecimiento = val),
                             ),
                             Row(
-                               mainAxisSize: MainAxisSize.min,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 SizedBox(
                                   width: 100,
@@ -261,9 +283,9 @@ class _FichasScreenState extends State<FichasScreen> {
                                 const SizedBox(width: 10),
                                 TextButton(
                                   onPressed: _clearFilters,
-                                   style: TextButton.styleFrom(
-                                     foregroundColor: AppColors.gris,
-                                   ),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppColors.gris,
+                                  ),
                                   child: const Text('Limpiar'),
                                 ),
                               ],
@@ -274,8 +296,6 @@ class _FichasScreenState extends State<FichasScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-
-                  // --- 3. Tabla de Datos - ACTUALIZADA ---
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : _errorMessage.isNotEmpty
@@ -339,12 +359,14 @@ class _FichasScreenState extends State<FichasScreen> {
                                       ),
                                     ],
                                   ),
-                                  // ✅ CAMBIO: Pasa las fichas reales
-                                  child: FichasDataTable(fichas: _currentPageItems),
+                                  child: FichasDataTable(
+                                    fichas: _currentPageItems,
+                                    onView: _onViewFicha,
+                                    onEdit: _onEditConsulta,
+                                    onDelete: _onDeleteFicha,
+                                  ),
                                 ),
                   const SizedBox(height: 20),
-
-                  // --- 4. Controles de Paginación - ACTUALIZADA ---
                   if (!_isLoading && _fichas.isNotEmpty)
                     Align(
                       alignment: Alignment.centerRight,
@@ -365,7 +387,6 @@ class _FichasScreenState extends State<FichasScreen> {
     );
   }
 
-  // Helper para Dropdowns (sin cambios)
   Widget _buildDropdown<T>({
     required String hint,
     required T? value,
