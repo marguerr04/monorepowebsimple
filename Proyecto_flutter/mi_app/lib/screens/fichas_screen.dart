@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/layout/admin_sidebar.dart';
 import '../widgets/fichas/fichas_data_table.dart';
-// Corregido el nombre del archivo de paginación
 import '../widgets/fichas/paginations_controls.dart';
-import '../utils/app_colors.dart'; // Importa tus colores si necesitas alguno específico
+import '../utils/app_colors.dart';
+import '../services/fichas_service.dart';
+import '../models/ficha_medica.model.dart'; 
 
 class FichasScreen extends StatefulWidget {
   const FichasScreen({super.key});
@@ -13,22 +14,52 @@ class FichasScreen extends StatefulWidget {
 }
 
 class _FichasScreenState extends State<FichasScreen> {
-  // --- Estados (sin cambios) ---
+  // --- Estados EXISTENTES ---
   int _currentPage = 1;
   final int _itemsPerPage = 10;
-  final int _totalItems = 7495;
+  int _totalItems = 0; // ✅ CAMBIO: Ahora será dinámico
   late int _totalPages;
   String? _selectedComuna;
   String? _selectedPatologia;
   String? _selectedEstablecimiento;
   final TextEditingController _edadDesdeController = TextEditingController();
   final TextEditingController _edadHastaController = TextEditingController();
-  final TextEditingController _searchController = TextEditingController(); // Controller para búsqueda
+  final TextEditingController _searchController = TextEditingController();
+
+  // ✅ NUEVOS ESTADOS para datos reales
+  final FichasService _fichasService = FichasService();
+  List<FichaMedica> _fichas = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
     _totalPages = (_totalItems / _itemsPerPage).ceil();
+    _loadFichas(); // ✅ NUEVO: Cargar datos reales al iniciar
+  }
+
+  // ✅ NUEVO: Método para cargar fichas del backend
+  Future<void> _loadFichas() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final fichas = await _fichasService.fetchFichasResumen();
+      setState(() {
+        _fichas = fichas;
+        _totalItems = fichas.length;
+        _totalPages = (_totalItems / _itemsPerPage).ceil();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error al cargar las fichas: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -43,21 +74,21 @@ class _FichasScreenState extends State<FichasScreen> {
     setState(() {
       _currentPage = newPage;
       print('Cambiando a página: $_currentPage');
-      // Lógica futura para recargar datos
     });
   }
 
   void _applyFilters() {
     setState(() {
-      print('Filtros aplicados: ...'); // Lógica existente
+      print('Filtros aplicados...');
       _currentPage = 1;
-      // Lógica futura para recargar datos
+      // Por ahora recargamos todos los datos
+      _loadFichas();
     });
   }
 
   void _clearFilters() {
     setState(() {
-       _searchController.clear(); // Limpia también el campo de búsqueda
+      _searchController.clear();
       _selectedComuna = null;
       _selectedPatologia = null;
       _selectedEstablecimiento = null;
@@ -65,20 +96,28 @@ class _FichasScreenState extends State<FichasScreen> {
       _edadHastaController.clear();
       _currentPage = 1;
       print('Filtros limpiados');
-      // Lógica futura para recargar datos
+      _loadFichas();
     });
+  }
+
+  // ✅ NUEVO: Método para obtener los datos de la página actual
+  List<FichaMedica> get _currentPageItems {
+    final startIndex = (_currentPage - 1) * _itemsPerPage;
+    final endIndex = startIndex + _itemsPerPage;
+    return _fichas.sublist(
+      startIndex.clamp(0, _fichas.length),
+      endIndex.clamp(0, _fichas.length),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Accedemos al tema para usar colores definidos globalmente
     final theme = Theme.of(context);
 
     return Scaffold(
-      // backgroundColor ahora viene del tema definido en main.dart (AppColors.fondoClaro)
       body: Row(
         children: [
-          // Sidebar (ya debería usar colores del tema/AppColors si lo actualizaste)
+          // Sidebar (sin cambios)
           Expanded(
             flex: 2,
             child: AdminSidebar(
@@ -97,25 +136,24 @@ class _FichasScreenState extends State<FichasScreen> {
           Expanded(
             flex: 8,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32.0), // Aumentamos padding general
+              padding: const EdgeInsets.all(32.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- 1. Encabezado y Botones de Acción ---
+                  // --- 1. Encabezado y Botones de Acción (sin cambios) ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Gestión de Fichas Médicas',
-                         style: theme.textTheme.titleLarge?.copyWith(fontSize: 26), // Usar estilo de título del tema
+                         style: theme.textTheme.titleLarge?.copyWith(fontSize: 26),
                       ),
                       Row(
                         children: [
                           ElevatedButton.icon(
                             onPressed: () { print('Crear Nueva Ficha'); },
-                            icon: const Icon(Icons.add, size: 18), // Icono más pequeño
+                            icon: const Icon(Icons.add, size: 18),
                             label: const Text('Crear Nueva Ficha'),
-                            // El estilo ya viene del elevatedButtonTheme en main.dart
                           ),
                           const SizedBox(width: 16),
                           OutlinedButton.icon(
@@ -123,11 +161,11 @@ class _FichasScreenState extends State<FichasScreen> {
                             icon: const Icon(Icons.download, size: 18),
                             label: const Text('Generar Dataset'),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: theme.primaryColor, // Color primario del tema
-                              side: BorderSide(color: theme.primaryColor), // Borde color primario
+                              foregroundColor: theme.primaryColor,
+                              side: BorderSide(color: theme.primaryColor),
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                                shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0), // Mismo redondeo que ElevatedButton
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
                           ),
@@ -135,17 +173,17 @@ class _FichasScreenState extends State<FichasScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 30), // Más espacio
+                  const SizedBox(height: 30),
 
-                  // --- 2. Panel de Búsqueda y Filtros ---
+                  // --- 2. Panel de Búsqueda y Filtros (sin cambios) ---
                   Container(
-                    padding: const EdgeInsets.all(20.0), // Más padding interno
+                    padding: const EdgeInsets.all(20.0),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.surface, // Usa el color de superficie del tema (blanco por defecto)
+                      color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05), // Sombra más suave
+                          color: Colors.black.withOpacity(0.05),
                           spreadRadius: 0,
                           blurRadius: 10,
                           offset: const Offset(0, 4),
@@ -155,26 +193,21 @@ class _FichasScreenState extends State<FichasScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Campo de Búsqueda
                         TextField(
                            controller: _searchController,
-                          decoration: const InputDecoration( // Estilo viene del inputDecorationTheme
+                          decoration: const InputDecoration(
                             hintText: 'Buscar por ID Paciente, Nombre o Apellido...',
                             prefixIcon: Icon(Icons.search),
-                           // fillColor ajustado en el tema
-                           // border ajustado en el tema
                           ),
-                           onSubmitted: (_) => _applyFilters(), // Aplicar filtros al presionar Enter
+                           onSubmitted: (_) => _applyFilters(),
                         ),
                         const SizedBox(height: 20),
 
-                        // Fila de Filtros Avanzados
                         Wrap(
                           spacing: 20.0,
                           runSpacing: 15.0,
-                          crossAxisAlignment: WrapCrossAlignment.end, // Alinea items al final
+                          crossAxisAlignment: WrapCrossAlignment.end,
                           children: [
-                            // Dropdown Comuna (Ejemplo con estilo mejorado)
                             _buildDropdown<String>(
                               hint: 'Comuna',
                               value: _selectedComuna,
@@ -193,9 +226,8 @@ class _FichasScreenState extends State<FichasScreen> {
                               items: ['Clínica A', 'Hospital B', 'Centro Salud C'],
                               onChanged: (val) => setState(() => _selectedEstablecimiento = val),
                             ),
-                            // Rango de Edad
                             Row(
-                               mainAxisSize: MainAxisSize.min, // Para que no ocupe todo el ancho
+                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 SizedBox(
                                   width: 100,
@@ -207,7 +239,7 @@ class _FichasScreenState extends State<FichasScreen> {
                                 ),
                                 const Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: Text('-'), // Separador
+                                  child: Text('-'),
                                 ),
                                 SizedBox(
                                   width: 100,
@@ -219,20 +251,18 @@ class _FichasScreenState extends State<FichasScreen> {
                                 ),
                               ],
                             ),
-                            // Botones de filtro
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 ElevatedButton(
                                   onPressed: _applyFilters,
                                   child: const Text('Aplicar Filtros'),
-                                  // Estilo viene del tema
                                 ),
                                 const SizedBox(width: 10),
                                 TextButton(
                                   onPressed: _clearFilters,
                                    style: TextButton.styleFrom(
-                                     foregroundColor: AppColors.gris, // Usar gris de AppColors
+                                     foregroundColor: AppColors.gris,
                                    ),
                                   child: const Text('Limpiar'),
                                 ),
@@ -245,36 +275,87 @@ class _FichasScreenState extends State<FichasScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // --- 3. Tabla de Datos ---
-                  // Envuelve la tabla en un Container para darle fondo y borde si es necesario
-                  Container(
-                     decoration: BoxDecoration(
-                       color: theme.colorScheme.surface, // Fondo blanco
-                       borderRadius: BorderRadius.circular(12),
-                        boxShadow: [ // Sombra opcional
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            spreadRadius: 0,
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                     ),
-                     child: const FichasDataTable(), // La tabla ya tiene sus datos dummy
-                  ),
+                  // --- 3. Tabla de Datos - ACTUALIZADA ---
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _errorMessage.isNotEmpty
+                          ? Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.red[50],
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.red[200]!),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(Icons.error_outline, color: Colors.red[400], size: 48),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    _errorMessage,
+                                    style: TextStyle(color: Colors.red[700]),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: _loadFichas,
+                                    child: const Text('Reintentar'),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : _fichas.isEmpty
+                              ? Container(
+                                  padding: const EdgeInsets.all(40),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.fondoClaro,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.inbox_outlined, color: AppColors.gris, size: 64),
+                                      const SizedBox(height: 16),
+                                      const Text(
+                                        'No hay fichas médicas disponibles',
+                                        style: TextStyle(fontSize: 18, color: AppColors.gris),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Text(
+                                        'Presiona "Crear Nueva Ficha" para agregar la primera',
+                                        style: TextStyle(color: AppColors.gris),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        spreadRadius: 0,
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  // ✅ CAMBIO: Pasa las fichas reales
+                                  child: FichasDataTable(fichas: _currentPageItems),
+                                ),
                   const SizedBox(height: 20),
 
-                  // --- 4. Controles de Paginación ---
-                  Align(
-                    alignment: Alignment.centerRight, // Alinea a la derecha
-                    child: PaginationControls(
-                      currentPage: _currentPage,
-                      totalPages: _totalPages,
-                      totalItems: _totalItems,
-                      itemsPerPage: _itemsPerPage,
-                      onPageChanged: _onPageChanged,
+                  // --- 4. Controles de Paginación - ACTUALIZADA ---
+                  if (!_isLoading && _fichas.isNotEmpty)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: PaginationControls(
+                        currentPage: _currentPage,
+                        totalPages: _totalPages,
+                        totalItems: _totalItems,
+                        itemsPerPage: _itemsPerPage,
+                        onPageChanged: _onPageChanged,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -284,8 +365,8 @@ class _FichasScreenState extends State<FichasScreen> {
     );
   }
 
- // Helper para construir Dropdowns con estilo consistente
- Widget _buildDropdown<T>({
+  // Helper para Dropdowns (sin cambios)
+  Widget _buildDropdown<T>({
     required String hint,
     required T? value,
     required List<T> items,
@@ -293,25 +374,25 @@ class _FichasScreenState extends State<FichasScreen> {
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      height: 48, // Altura estándar para inputs
+      height: 48,
       decoration: BoxDecoration(
-        color: AppColors.blanco, // Fondo blanco
+        color: AppColors.blanco,
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: AppColors.bordeClaro), // Borde claro
+        border: Border.all(color: AppColors.bordeClaro),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<T>(
           value: value,
           hint: Text(hint, style: const TextStyle(color: AppColors.gris)),
-          isExpanded: true, // Para que ocupe el ancho disponible en Wrap
+          isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.gris),
           elevation: 2,
-          style: const TextStyle(color: AppColors.textoOscuro, fontSize: 14), // Estilo del texto
+          style: const TextStyle(color: AppColors.textoOscuro, fontSize: 14),
           dropdownColor: AppColors.blanco,
           items: items.map<DropdownMenuItem<T>>((T itemValue) {
             return DropdownMenuItem<T>(
               value: itemValue,
-              child: Text(itemValue.toString()), // Asume que T se puede convertir a String
+              child: Text(itemValue.toString()),
             );
           }).toList(),
           onChanged: onChanged,
@@ -320,4 +401,3 @@ class _FichasScreenState extends State<FichasScreen> {
     );
   }
 }
-

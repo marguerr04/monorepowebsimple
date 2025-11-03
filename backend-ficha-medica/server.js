@@ -293,3 +293,150 @@ app.get('/api/centros-medicos', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+
+
+
+
+// ============================================
+// === ENDPOINT 1: Analitos historial Flutter ===
+// ============================================
+app.get("/api/analitos/historial/:pacienteId", async (req, res) => {
+  const { pacienteId } = req.params;
+  let { nombre, lastFetchTime } = req.query;
+
+  if (!nombre) {
+    return res.status(400).json({ error: "El parámetro 'nombre' es requerido." });
+  }
+
+  try {
+    console.log(`📈 [Flutter] Petición de analitos para Paciente ID: ${pacienteId}, Analito: ${nombre}`);
+    
+    // Formatear los nombres para la consulta
+    let nombres = Array.isArray(nombre) ? nombre : [nombre];
+    let cleanNombres = nombres.map(n => n.trim());
+    const nombrePlaceholders = cleanNombres.map((_, i) => `$${i + 2}`).join(", ");
+    let queryParams = [pacienteId, ...cleanNombres];
+    
+    // Consulta principal
+    let queryString = `
+      SELECT 
+        ra.resultado AS valor,
+        e.fecha,
+        e.fecha AS last_updated, 
+        td.nombre AS analito
+      FROM resultado_analito ra
+      JOIN examen e ON ra.examen_id = e.id
+      JOIN tipo_dato td ON ra.tipo_dato_id = td.id
+      JOIN ficha_medica fm ON e.ficha_medica_id = fm.id
+      WHERE fm.paciente_id = $1
+        AND td.nombre ILIKE ANY (ARRAY[${nombrePlaceholders}])
+    `;
+
+    if (lastFetchTime) {
+      queryString += ` AND e.fecha > $${queryParams.length + 1}`;
+      queryParams.push(lastFetchTime);
+    }
+
+    queryString += ` ORDER BY e.fecha ASC;`;
+    
+    console.log("Query ejecutada:", queryString, queryParams);
+    const result = await db.query(queryString, queryParams);
+    res.json(result.rows);
+
+  } catch (err) {
+    console.error("💥 [Flutter] Error en /api/analitos/historial:", err);
+    res.status(500).json({ error: "Error al consultar historial de analito", details: err.message });
+  }
+});
+
+
+// ============================================
+// === ENDPOINT 2: Exámenes estadísticas Flutter ===
+// ============================================
+app.get("/api/examenes/estadisticas", async (req, res) => {
+  try {
+    console.log(`📊 [Flutter] Petición de estadísticas de exámenes`);
+    
+    const queryString = `
+      SELECT
+        te.nombre AS tipo_examen,
+        CAST(COUNT(CASE WHEN ra.aprobado = TRUE THEN 1 END) AS INT) AS aprobados,
+        CAST(COUNT(CASE WHEN ra.aprobado = FALSE THEN 1 END) AS INT) AS reprobados,
+        MAX(e.fecha) as last_updated
+      FROM tipo_examen te
+      LEFT JOIN examen e ON te.id = e.tipo_examen_id
+      LEFT JOIN resultado_analito ra ON e.id = ra.examen_id
+      GROUP BY te.nombre
+      ORDER BY te.nombre ASC;
+    `;
+    
+    const statsResult = await db.query(queryString);
+    console.log(`📊 [Flutter] Estadísticas encontradas: ${statsResult.rows.length} tipos`);
+    res.json(statsResult.rows);
+
+  } catch (err) {
+    console.error("💥 [Flutter] Error en /api/examenes/estadisticas:", err);
+    res.status(500).json({ error: "Error al consultar estadísticas", details: err.message });
+  }
+});
+
+
+
+
+// ============================================
+// === ENDPOINT 3: Fichas médicas resumen (READ) ===
+// ============================================
+app.get('/api/fichas-resumen', async (req, res) => {
+  console.log("🔍 [Flutter] Petición recibida para /api/fichas-resumen");
+  try {
+    const query = `
+      WITH UltimaConsulta AS (
+        SELECT
+          fm.id AS ficha_id,
+          MAX(c.fecha) AS ultima_fecha
+        FROM ficha_medica fm
+        JOIN consulta c ON c.ficha_medica_id = fm.id
+        GROUP BY fm.id
+      ),
+      DiagnosticoReciente AS (
+        SELECT
+          dc.consulta_id,
+          (SELECT d.nombre 
+           FROM diagnostico d 
+           WHERE d.id = MIN(dc.diagnostico_id)) AS diagnostico_principal
+        FROM diagnostico_consulta dc
+        GROUP BY dc.consulta_id
+      )
+      SELECT
+        fm.id AS "idFicha",
+        p.nombre AS "nombrePaciente",
+        p.rut AS "idPaciente",
+        EXTRACT(YEAR FROM AGE(p.fechanac))::INT AS "edad",
+        COALESCE(dr.diagnostico_principal, 'Sin diagnóstico') AS "diagnosticoPrincipal",
+        uc.ultima_fecha AS "fechaActualizacion",
+        COALESCE(m.nombre, 'No asignado') AS "especialidadACargo",
+        COALESCE(s.dirSucurs, 'Sin establecimiento') AS "establecimiento",
+        'Activo' AS "estado"
+      FROM ficha_medica fm
+      JOIN paciente p ON fm.paciente_id = p.id
+      LEFT JOIN UltimaConsulta uc ON uc.ficha_id = fm.id
+      LEFT JOIN consulta c ON c.ficha_medica_id = fm.id AND c.fecha = uc.ultima_fecha
+      LEFT JOIN DiagnosticoReciente dr ON dr.consulta_id = c.id
+      LEFT JOIN medico m ON m.id = c.medico_id
+      LEFT JOIN examen e ON e.ficha_medica_id = fm.id  
+      LEFT JOIN sucursal s ON e.sucursal_id = s.id     
+      ORDER BY uc.ultima_fecha DESC NULLS LAST
+      LIMIT 10;
+    `;
+
+    const result = await db.query(query);
+    console.log(`✅ [Flutter] Fichas-resumen encontradas: ${result.rows.length}`);
+    res.json(result.rows);
+
+  } catch (error) {
+    console.error('💥 ERROR en /api/fichas-resumen:', error);
+    res.status(500).json({ error: error.message });
+  }
+});

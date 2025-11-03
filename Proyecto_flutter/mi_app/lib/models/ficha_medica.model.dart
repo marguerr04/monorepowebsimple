@@ -1,35 +1,66 @@
-import 'package:intl/intl.dart'; // Asegúrate de tener intl en pubspec.yaml
+import 'package:intl/intl.dart';
 
-// Mantenemos tu modelo original si lo necesitas para otras partes
 class FichaMedica {
   final int idFicha;
+  final String idPaciente;
+  final String nombrePaciente;
+  final int edad;
   final String diagnosticoPrincipal;
-  final DateTime fecha; // Usamos DateTime para facilitar el formateo
-  final String especialidad;
+  final DateTime fechaActualizacion;
+  final String especialidadACargo;
+  final String establecimiento;
   final String estado;
 
   FichaMedica({
     required this.idFicha,
+    required this.idPaciente,
+    required this.nombrePaciente,
+    required this.edad,
     required this.diagnosticoPrincipal,
-    required this.fecha,
-    required this.especialidad,
+    required this.fechaActualizacion,
+    required this.especialidadACargo,
+    required this.establecimiento,
     required this.estado,
   });
 
-  // Helper para formatear la fecha
+  factory FichaMedica.fromJson(Map<String, dynamic> json) {
+    return FichaMedica(
+      idFicha: json['idFicha'] ?? json['id'] ?? 0,
+      idPaciente: json['idPaciente'] ?? '',
+      nombrePaciente: json['nombrePaciente'] ?? 'Sin nombre',
+      edad: json['edad'] is int
+          ? json['edad']
+          : int.tryParse(json['edad'].toString()) ?? 0,
+      diagnosticoPrincipal: json['diagnosticoPrincipal'] ??
+          json['diagnostico_principal'] ??
+          'Sin diagnóstico',
+      fechaActualizacion: DateTime.tryParse(
+              json['fechaActualizacion'] ??
+                  json['fecha'] ??
+                  DateTime.now().toIso8601String()) ??
+          DateTime.now(),
+      especialidadACargo:
+          json['especialidadACargo'] ?? json['especialidad'] ?? 'No asignado',
+      establecimiento:
+          json['establecimiento'] ?? json['dirSucursal'] ?? 'Sin establecimiento',
+      estado: json['estado'] ?? 'Activo',
+    );
+  }
+
   String get fechaFormateada {
-    return DateFormat('dd/MM/yyyy').format(fecha);
+    return DateFormat('dd/MM/yyyy').format(fechaActualizacion);
   }
 }
 
-// NUEVO MODELO PARA LA TABLA DE RESUMEN (basado en la imagen nueva)
+
+// MODELO DE RESUMEN - Mantenemos si lo necesitas
 class FichaResumen {
   final String idPacienteAnonimizado;
   final String nombrePaciente;
   final int edad;
-  final List<String> patologias; // Lista de strings para los tags
+  final List<String> patologias;
   final DateTime ultimaActualizacion;
-  final bool tienePdf; // Para saber si mostrar el icono de PDF
+  final bool tienePdf;
 
   FichaResumen({
     required this.idPacienteAnonimizado,
@@ -40,8 +71,19 @@ class FichaResumen {
     this.tienePdf = false,
   });
 
-   String get fechaActualizacionFormateada {
+  // Factory constructor desde JSON
+  factory FichaResumen.fromJson(Map<String, dynamic> json) {
+    return FichaResumen(
+      idPacienteAnonimizado: json['id_paciente'] ?? 'N/A',
+      nombrePaciente: json['nombre_paciente'] ?? 'Sin nombre',
+      edad: json['edad'] ?? 0,
+      patologias: (json['patologias'] as List<dynamic>?)?.cast<String>() ?? [],
+      ultimaActualizacion: DateTime.parse(json['ultima_actualizacion'] ?? DateTime.now().toString()),
+      tienePdf: json['tiene_pdf'] ?? false,
+    );
+  }
+
+  String get fechaActualizacionFormateada {
     return DateFormat('dd/MM/yyyy').format(ultimaActualizacion);
   }
 }
-
