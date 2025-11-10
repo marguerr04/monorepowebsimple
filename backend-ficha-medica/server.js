@@ -384,13 +384,27 @@ app.get("/api/examenes/estadisticas", async (req, res) => {
 
 
 
-
-// ============================================
-// === ENDPOINT 3: Fichas médicas resumen (READ) ===
-// ============================================
 app.get('/api/fichas-resumen', async (req, res) => {
   console.log("🔍 [Flutter] Petición recibida para /api/fichas-resumen");
+  
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  console.log(`📊 Paginación: página ${page}, límite ${limit}, offset ${offset}`);
+
   try {
+    // 1. Consulta para obtener el TOTAL de registros
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM ficha_medica fm
+      JOIN paciente p ON fm.paciente_id = p.id
+    `;
+    const countResult = await db.query(countQuery);
+    const totalItems = parseInt(countResult.rows[0].total);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // 2. Consulta principal con paginación
     const query = `
       WITH UltimaConsulta AS (
         SELECT
@@ -419,7 +433,9 @@ app.get('/api/fichas-resumen', async (req, res) => {
         uc.ultima_fecha AS "fechaActualizacion",
         COALESCE(m.nombre, 'No asignado') AS "especialidadACargo",
         COALESCE(s.dirSucurs, 'Sin establecimiento') AS "establecimiento",
-        'Activo' AS "estado"
+        'Activo' AS "estado",
+        c.pesoPaciente AS "pesoPaciente",
+        c.alturaPaciente AS "alturaPaciente"
       FROM ficha_medica fm
       JOIN paciente p ON fm.paciente_id = p.id
       LEFT JOIN UltimaConsulta uc ON uc.ficha_id = fm.id
@@ -429,19 +445,28 @@ app.get('/api/fichas-resumen', async (req, res) => {
       LEFT JOIN examen e ON e.ficha_medica_id = fm.id  
       LEFT JOIN sucursal s ON e.sucursal_id = s.id     
       ORDER BY uc.ultima_fecha DESC NULLS LAST
-      LIMIT 10;
+      LIMIT $1 OFFSET $2;
     `;
 
-    const result = await db.query(query);
-    console.log(`✅ [Flutter] Fichas-resumen encontradas: ${result.rows.length}`);
-    res.json(result.rows);
+    const result = await db.query(query, [limit, offset]);
+    
+    // 3. Devolver respuesta con metadata de paginación
+    const respuesta = {
+      items: result.rows,
+      total: totalItems,
+      totalPages: totalPages,
+      currentPage: page,
+      itemsPerPage: limit
+    };
+
+    console.log(`✅ [Flutter] Fichas-resumen: ${result.rows.length} de ${totalItems} (página ${page}/${totalPages})`);
+    res.json(respuesta);
 
   } catch (error) {
     console.error('💥 ERROR en /api/fichas-resumen:', error);
     res.status(500).json({ error: error.message });
   }
 });
-
 
 
 // ============================================

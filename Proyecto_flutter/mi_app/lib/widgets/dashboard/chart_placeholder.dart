@@ -19,14 +19,25 @@ class ChartPlaceholder extends StatelessWidget {
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: Colors.white, // 👈 fondo blanco (antes gris)
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[400]!),
+            border: Border.all(
+              color: Colors.black.withOpacity(0.15), // 👈 contorno negro fino
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          child: Center(
-            child: Icon(icon, size: 80, color: Colors.grey[500]),
-          ),
-        ),
+  child: Center(
+    child: Icon(icon, size: 80, color: Colors.grey[400]),
+  ),
+),
+
       ],
     );
   }

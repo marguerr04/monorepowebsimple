@@ -20,119 +20,110 @@ class FichasDataTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // ✅ SOLUCIÓN: Usar LayoutBuilder para forzar la expansión
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth), // ✅ FORZAR ANCHO MÁXIMO
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
             child: DataTable(
               columnSpacing: 20.0,
               headingRowHeight: 52.0,
               dataRowHeight: 56.0,
               headingRowColor: MaterialStateProperty.all(AppColors.fondoClaro),
               columns: const [
-                DataColumn(label: Text('ID Ficha')),
-                DataColumn(label: Text('Paciente')),
-                DataColumn(label: Text('Edad')),
-                DataColumn(label: Text('Diagnóstico')),
-                DataColumn(label: Text('Establecimiento')),
+                DataColumn(label: Text('ID Ficha')), // 
+                DataColumn(label: Text('ID Consulta')), // 
+                DataColumn(label: Text('Médico')),
                 DataColumn(label: Text('Fecha')),
-                DataColumn(
-                  label: Text('Acciones'),
-                  numeric: true,
-                ),
+                DataColumn(label: Text('Altura (m)')),
+                DataColumn(label: Text('Acciones')),
               ],
               rows: fichas.map((ficha) {
                 return DataRow(
                   cells: [
-                    // ✅ QUITAR ConstrainedBox - dejar que se expanda
-                    DataCell(Text(ficha.idFicha)),
-                    
-                    // ✅ QUITAR ConstrainedBox - dejar que se expanda
+                    // ID Ficha (PRINCIPAL)
                     DataCell(
                       Tooltip(
-                        message: ficha.nombrePaciente,
+                        message: 'Ficha ID: ${ficha.idFicha}',
                         child: Text(
-                          ficha.nombrePaciente,
-                          overflow: TextOverflow.ellipsis,
+                          ficha.idFicha, // ✅ MUESTRA SOLO EL ID FICHA
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blue, // Destacar el ID ficha
+                          ),
                         ),
                       ),
                     ),
                     
-                    DataCell(Text(ficha.edad.toString())),
-                    
-                    // ✅ QUITAR ConstrainedBox - dejar que se expanda
+                    // ID Consulta
                     DataCell(
                       Tooltip(
-                        message: ficha.diagnosticoPrincipal,
+                        message: 'Consulta ID: ${ficha.idConsulta}',
                         child: Text(
-                          ficha.diagnosticoPrincipal,
-                          overflow: TextOverflow.ellipsis,
+                          ficha.idConsulta != null ? 'C-${ficha.idConsulta}' : 'N/A',
+                          style: TextStyle(
+                            color: ficha.idConsulta != null ? Colors.black : Colors.grey[600],
+                          ),
                         ),
                       ),
                     ),
                     
-                    // ✅ QUITAR ConstrainedBox - dejar que se expanda
+                    // Médico
                     DataCell(
                       Tooltip(
-                        message: ficha.establecimiento,
+                        message: ficha.especialidadACargo,
                         child: Text(
-                          ficha.establecimiento,
+                          ficha.especialidadACargo,
                           overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
                         ),
                       ),
                     ),
                     
+                    // Fecha
                     DataCell(Text(ficha.fechaFormateada)),
                     
-                    // ✅ QUITAR Container con constraints - dejar que se expanda
+                    // Altura
+                    DataCell(
+                      Tooltip(
+                        message: ficha.alturaFormateada,
+                        child: Text(
+                          ficha.alturaFormateada,
+                          style: TextStyle(
+                            color: ficha.alturaPaciente != null ? Colors.black : Colors.grey[600],
+                            fontWeight: ficha.alturaPaciente != null ? FontWeight.normal : FontWeight.w300,
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    // Acciones
                     DataCell(
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          // --- ✅ ACCIÓN "VER" (OJO) ---
+                          // VER FICHA
                           IconButton(
                             padding: const EdgeInsets.all(6),
-                            constraints: const BoxConstraints(
-                              minWidth: 40,
-                              maxWidth: 40,
-                            ),
-                            icon: Icon(
-                              Icons.visibility_outlined, 
-                              color: theme.primaryColor, 
-                              size: 20,
-                            ),
-                            tooltip: 'Ver Ficha Detallada',
-                            onPressed: () {
-                              print('Ver ficha: ${ficha.idFicha}');
-                              onView(ficha.idFicha);
-                            },
+                            constraints: const BoxConstraints(minWidth: 40, maxWidth: 40),
+                            icon: Icon(Icons.visibility_outlined, color: theme.primaryColor, size: 20),
+                            tooltip: 'Ver Ficha del Paciente',
+                            onPressed: () => onView(ficha.idFicha),
                           ),
 
-                          // --- ✅ ACCIÓN "EDITAR" (LÁPIZ) ---
+                          // EDITAR CONSULTA
                           IconButton(
                             padding: const EdgeInsets.all(6),
-                            constraints: const BoxConstraints(
-                              minWidth: 40,
-                              maxWidth: 40,
-                            ),
-                            icon: const Icon(
-                              Icons.edit_outlined, 
-                              color: AppColors.gris, 
-                              size: 20,
-                            ),
-                            tooltip: 'Editar Última Consulta',
+                            constraints: const BoxConstraints(minWidth: 40, maxWidth: 40),
+                            icon: const Icon(Icons.edit_outlined, color: AppColors.gris, size: 20),
+                            tooltip: 'Editar Consulta',
                             onPressed: () {
-                              print('✏️ Editar consulta: ${ficha.idConsulta}');
                               if (ficha.idConsulta == null) {
-                                print('❌ No hay idConsulta para ${ficha.idFicha}');
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('No hay consultas para editar en ${ficha.idFicha}'),
-                                    duration: const Duration(seconds: 2),
+                                    content: Text('No hay consulta para editar en ${ficha.idFicha}'),
                                   ),
                                 );
                               } else {
@@ -141,23 +132,13 @@ class FichasDataTable extends StatelessWidget {
                             },
                           ),
 
-                          // --- ✅ ACCIÓN "BORRAR" (BASURA) ---
+                          // ELIMINAR
                           IconButton(
                             padding: const EdgeInsets.all(6),
-                            constraints: const BoxConstraints(
-                              minWidth: 40,
-                              maxWidth: 40,
-                            ),
-                            icon: Icon(
-                              Icons.delete_outline, 
-                              color: Colors.red[700], 
-                              size: 20,
-                            ),
-                            tooltip: 'Eliminar Ficha',
-                            onPressed: () {
-                              print('🗑️ Eliminar ficha: ${ficha.idFicha}');
-                              onDelete(ficha.idFicha);
-                            },
+                            constraints: const BoxConstraints(minWidth: 40, maxWidth: 40),
+                            icon: Icon(Icons.delete_outline, color: Colors.red[700], size: 20),
+                            tooltip: 'Eliminar Consulta',
+                            onPressed: () => onDelete(ficha.idFicha),
                           ),
                         ],
                       ),

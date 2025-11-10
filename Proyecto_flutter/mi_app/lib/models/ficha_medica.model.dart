@@ -1,3 +1,4 @@
+// lib/models/ficha_medica.model.dart
 import 'package:intl/intl.dart';
 
 class FichaMedica {
@@ -11,10 +12,12 @@ class FichaMedica {
   final String especialidadACargo;
   final String establecimiento;
   final String estado;
+  final double? pesoPaciente;  // NUEVO CAMPO
+  final double? alturaPaciente; // UEVO CAMPO
 
   FichaMedica({
     required this.idFicha,
-    this.idConsulta, 
+    this.idConsulta,
     required this.nombrePaciente,
     required this.idPaciente,
     required this.edad,
@@ -23,6 +26,8 @@ class FichaMedica {
     required this.especialidadACargo,
     required this.establecimiento,
     required this.estado,
+    this.pesoPaciente,  // NUEVO CAMPO
+    this.alturaPaciente, // NUEVO CAMPO
   });
 
   String get fechaFormateada {
@@ -30,34 +35,32 @@ class FichaMedica {
     return DateFormat('dd/MM/yyyy').format(fechaActualizacion!);
   }
 
+  // ✅ Método útil para mostrar altura formateada
+  String get alturaFormateada {
+    if (alturaPaciente == null) return '--';
+    return '${alturaPaciente!.toStringAsFixed(2)} m';
+  }
+
   factory FichaMedica.fromJson(Map<String, dynamic> json) {
     return FichaMedica(
-      // ---  CORRECCIÓN ---
-      // El JSON envía 'idFicha' como int (ej: 1).
-      // Lo convertimos a String y le añadimos el prefijo 'F-'.
       idFicha: 'F-${json['idFicha']?.toString() ?? '???'}',
-      
-      idConsulta: json['idConsulta'], // Este ya es int?, está OK.
-      
+      idConsulta: json['idConsulta'],
       nombrePaciente: json['nombrePaciente'] ?? 'Sin Nombre',
-      
-      // --- ✅ CORRECCIÓN ---
-      // El JSON envía 'idPaciente' (RUT) como int (ej: 181234567).
-      // Lo convertimos a String.
       idPaciente: json['idPaciente']?.toString() ?? 'Sin RUT',
-      
       edad: json['edad'] ?? 0,
-      
       diagnosticoPrincipal: json['diagnosticoPrincipal'] ?? 'Sin Diagnóstico',
-      
       fechaActualizacion: json['fechaActualizacion'] != null
           ? DateTime.parse(json['fechaActualizacion'])
           : null,
-          
       especialidadACargo: json['especialidadACargo'] ?? 'No Asignado',
       establecimiento: json['establecimiento'] ?? 'Sin Establecimiento',
       estado: json['estado'] ?? 'Inactivo',
+      pesoPaciente: json['pesoPaciente'] != null 
+          ? double.tryParse(json['pesoPaciente'].toString()) 
+          : null, // ✅ NUEVO CAMPO
+      alturaPaciente: json['alturaPaciente'] != null 
+          ? double.tryParse(json['alturaPaciente'].toString()) 
+          : null, // ✅ NUEVO CAMPO
     );
   }
 }
-

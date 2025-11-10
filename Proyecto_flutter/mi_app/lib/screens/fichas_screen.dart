@@ -7,9 +7,6 @@ import '../services/fichas_service.dart';
 import '../models/ficha_medica.model.dart';
 import './ficha_detalle_screen.dart';
 import './consulta_edit_screen.dart';
-import '../widgets/fichas/ficha_detail_dialog.dart';
-import '../widgets/fichas/consulta_edit_dialog.dart';
-
 
 class FichasScreen extends StatefulWidget {
   const FichasScreen({super.key});
@@ -22,16 +19,16 @@ class _FichasScreenState extends State<FichasScreen> {
   int _currentPage = 1;
   final int _itemsPerPage = 10;
   int _totalItems = 0;
-  late int _totalPages;
-  String? _selectedComuna;
-  String? _selectedPatologia;
-  String? _selectedEstablecimiento;
-  final TextEditingController _edadDesdeController = TextEditingController();
-  final TextEditingController _edadHastaController = TextEditingController();
+  int _totalPages = 1;
+  
+  // ✅ SOLO buscador por ID Ficha (nota: busca en la página actual cuando se usa paginación remota)
   final TextEditingController _searchController = TextEditingController();
 
   final FichasService _fichasService = FichasService();
-  List<FichaMedica> _fichas = [];
+  // Contenedor para los items de la página actual
+  List<FichaMedica> _pageItems = [];
+  // Items filtrados en la página actual (para el buscador local)
+  List<FichaMedica> _pageItemsFiltrados = [];
   bool _isLoading = true;
   String _errorMessage = '';
 
@@ -39,26 +36,36 @@ class _FichasScreenState extends State<FichasScreen> {
   void initState() {
     super.initState();
     _totalPages = (_totalItems / _itemsPerPage).ceil();
-    _loadFichas();
+    _loadConsultas(page: _currentPage);
   }
 
-  Future<void> _loadFichas() async {
+  // Cargar consultas pidiendo la página al backend
+  Future<void> _loadConsultas({int page = 1}) async {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
 
     try {
-      final fichas = await _fichasService.fetchFichasResumen();
+      // Usamos el método que devuelve items + metadata
+      final result = await _fichasService.fetchFichasResumen(page: page, limit: _itemsPerPage);
+
+      final items = (result['items'] as List<FichaMedica>);
+      final total = result['total'] as int;
+      final totalPages = result['totalPages'] as int;
+      final currentPage = result['currentPage'] as int;
+
       setState(() {
-        _fichas = fichas;
-        _totalItems = fichas.length;
-        _totalPages = (_totalItems / _itemsPerPage).ceil();
+        _pageItems = items;
+        _pageItemsFiltrados = items;
+        _totalItems = total;
+        _totalPages = totalPages > 0 ? totalPages : 1;
+        _currentPage = currentPage;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error al cargar las fichas: $e';
+        _errorMessage = 'Error al cargar las consultas: $e';
         _isLoading = false;
       });
     }
@@ -66,49 +73,47 @@ class _FichasScreenState extends State<FichasScreen> {
 
   @override
   void dispose() {
-    _edadDesdeController.dispose();
-    _edadHastaController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   void _onPageChanged(int newPage) {
-    setState(() {
-      _currentPage = newPage;
-      print('Cambiando a página: $_currentPage');
-    });
+    // Al cambiar la página, solicitamos la nueva página al servidor
+    _loadConsultas(page: newPage);
   }
 
-  void _applyFilters() {
+  // ✅ NUEVO: Filtrar por ID Ficha
+  void _filtrarPorIDFicha() {
+    final idBuscado = _searchController.text.trim().toLowerCase();
+    
     setState(() {
-      print('Filtros aplicados...');
-      _currentPage = 1;
-      _loadFichas();
+      if (idBuscado.isEmpty) {
+        _pageItemsFiltrados = _pageItems;
+      } else {
+        final idLimpio = idBuscado.replaceAll('f-', '');
+        _pageItemsFiltrados = _pageItems.where((ficha) {
+          final idFicha = ficha.idFicha.toLowerCase().replaceAll('f-', '');
+          return idFicha.contains(idLimpio);
+        }).toList();
+      }
+      // Nota: al filtrar localmente sobre la página actual, no actualizamos _totalItems ni _totalPages
+      // Para un buscador global se debe implementar búsqueda en el servidor.
     });
+    
+    print('🔍 Buscando ID Ficha: "$idBuscado" - Encontrados: ${_pageItemsFiltrados.length} registros (en página actual)');
   }
 
-  void _clearFilters() {
+  // ✅ NUEVO: Limpiar búsqueda
+  void _limpiarBusqueda() {
     setState(() {
       _searchController.clear();
-      _selectedComuna = null;
-      _selectedPatologia = null;
-      _selectedEstablecimiento = null;
-      _edadDesdeController.clear();
-      _edadHastaController.clear();
-      _currentPage = 1;
-      print('Filtros limpiados');
-      _loadFichas();
+      _pageItemsFiltrados = _pageItems;
     });
+    print('🧹 Búsqueda limpiada - Mostrando todos los registros');
   }
 
-  List<FichaMedica> get _currentPageItems {
-    final startIndex = (_currentPage - 1) * _itemsPerPage;
-    final endIndex = startIndex + _itemsPerPage;
-    return _fichas.sublist(
-      startIndex.clamp(0, _fichas.length),
-      endIndex.clamp(0, _fichas.length),
-    );
-  }
+  // Ahora la página ya viene del servidor, así que devolvemos los items filtrados de la página actual
+  List<FichaMedica> get _currentPageItems => _pageItemsFiltrados;
 
   void _onViewFicha(String fichaId) {
     print('Ver Ficha ID: $fichaId');
@@ -130,7 +135,7 @@ class _FichasScreenState extends State<FichasScreen> {
     ).then((dataEditada) {
       if (dataEditada == true) {
         print("Recargando fichas después de editar...");
-        _loadFichas();
+        _loadConsultas();
       }
     });
   }
@@ -170,21 +175,21 @@ class _FichasScreenState extends State<FichasScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Gestión de Fichas Médicas',
+                        'Gestión de Consultas Médicas',
                         style: theme.textTheme.titleLarge?.copyWith(fontSize: 26),
                       ),
                       Row(
                         children: [
                           ElevatedButton.icon(
-                            onPressed: () { print('Crear Nueva Ficha'); },
+                            onPressed: () { print('Crear Nueva Consulta'); },
                             icon: const Icon(Icons.add, size: 18),
-                            label: const Text('Crear Nueva Ficha'),
+                            label: const Text('Crear Nueva Consulta'),
                           ),
                           const SizedBox(width: 16),
                           OutlinedButton.icon(
-                            onPressed: () { print('Generar Dataset'); },
+                            onPressed: () { print('Generar Reporte'); },
                             icon: const Icon(Icons.download, size: 18),
-                            label: const Text('Generar Dataset'),
+                            label: const Text('Generar Reporte'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: theme.primaryColor,
                               side: BorderSide(color: theme.primaryColor),
@@ -199,6 +204,8 @@ class _FichasScreenState extends State<FichasScreen> {
                     ],
                   ),
                   const SizedBox(height: 30),
+                  
+                  // ✅ SOLO BUSCADOR POR ID FICHA
                   Container(
                     padding: const EdgeInsets.all(20.0),
                     decoration: BoxDecoration(
@@ -216,85 +223,47 @@ class _FichasScreenState extends State<FichasScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextField(
-                          controller: _searchController,
-                          decoration: const InputDecoration(
-                            hintText: 'Buscar por ID Paciente, Nombre o Apellido...',
-                            prefixIcon: Icon(Icons.search),
-                          ),
-                          onSubmitted: (_) => _applyFilters(),
-                        ),
-                        const SizedBox(height: 20),
-                        Wrap(
-                          spacing: 20.0,
-                          runSpacing: 15.0,
-                          crossAxisAlignment: WrapCrossAlignment.end,
+                        Row(
+
+
+
+                          
                           children: [
-                            _buildDropdown<String>(
-                              hint: 'Comuna',
-                              value: _selectedComuna,
-                              items: ['Santiago', 'Providencia', 'Las Condes', 'Ñuñoa'],
-                              onChanged: (val) => setState(() => _selectedComuna = val),
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                decoration: const InputDecoration(
+                                  hintText: 'Buscar por ID Ficha...',
+                                  prefixIcon: Icon(Icons.search),
+                                  border: OutlineInputBorder(),
+                                ),
+                                onSubmitted: (_) => _filtrarPorIDFicha(),
+                              ),
                             ),
-                            _buildDropdown<String>(
-                              hint: 'Patologías',
-                              value: _selectedPatologia,
-                              items: ['Diabetes', 'Hipertensión', 'Ansiedad', 'Obesidad', 'Respiratoria'],
-                              onChanged: (val) => setState(() => _selectedPatologia = val),
+                            const SizedBox(width: 12),
+                            ElevatedButton(
+                              onPressed: _filtrarPorIDFicha,
+                              child: const Text('Buscar'),
                             ),
-                            _buildDropdown<String>(
-                              hint: 'Establecimiento',
-                              value: _selectedEstablecimiento,
-                              items: ['Clínica A', 'Hospital B', 'Centro Salud C'],
-                              onChanged: (val) => setState(() => _selectedEstablecimiento = val),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(
-                                  width: 100,
-                                  child: TextField(
-                                    controller: _edadDesdeController,
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(hintText: 'Desde', isDense: true),
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: Text('-'),
-                                ),
-                                SizedBox(
-                                  width: 100,
-                                  child: TextField(
-                                    controller: _edadHastaController,
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(hintText: 'Hasta', isDense: true),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: _applyFilters,
-                                  child: const Text('Aplicar Filtros'),
-                                ),
-                                const SizedBox(width: 10),
-                                TextButton(
-                                  onPressed: _clearFilters,
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: AppColors.gris,
-                                  ),
-                                  child: const Text('Limpiar'),
-                                ),
-                              ],
+                            const SizedBox(width: 8),
+                            TextButton(
+                              onPressed: _limpiarBusqueda,
+                              child: const Text('Limpiar'),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Ejemplo: 1, F-1, 95, F-95',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
                   ),
+                  
                   const SizedBox(height: 30),
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
@@ -317,13 +286,13 @@ class _FichasScreenState extends State<FichasScreen> {
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton(
-                                    onPressed: _loadFichas,
+                                    onPressed: _loadConsultas,
                                     child: const Text('Reintentar'),
                                   ),
                                 ],
                               ),
                             )
-                          : _fichas.isEmpty
+                          : _pageItemsFiltrados.isEmpty
                               ? Container(
                                   padding: const EdgeInsets.all(40),
                                   decoration: BoxDecoration(
@@ -332,16 +301,28 @@ class _FichasScreenState extends State<FichasScreen> {
                                   ),
                                   child: Column(
                                     children: [
-                                      Icon(Icons.inbox_outlined, color: AppColors.gris, size: 64),
+                                      Icon(
+                                        _searchController.text.isEmpty 
+                                            ? Icons.inbox_outlined 
+                                            : Icons.search_off, 
+                                        color: AppColors.gris, 
+                                        size: 64
+                                      ),
                                       const SizedBox(height: 16),
-                                      const Text(
-                                        'No hay fichas médicas disponibles',
-                                        style: TextStyle(fontSize: 18, color: AppColors.gris),
+                                      Text(
+                                        _searchController.text.isEmpty 
+                                            ? 'No hay consultas médicas disponibles'
+                                            : 'No se encontraron consultas para el ID Ficha buscado',
+                                        style: const TextStyle(fontSize: 18, color: AppColors.gris),
+                                        textAlign: TextAlign.center,
                                       ),
                                       const SizedBox(height: 8),
-                                      const Text(
-                                        'Presiona "Crear Nueva Ficha" para agregar la primera',
-                                        style: TextStyle(color: AppColors.gris),
+                                      Text(
+                                        _searchController.text.isEmpty
+                                            ? 'Presiona "Crear Nueva Consulta" para agregar la primera'
+                                            : 'Verifica el ID Ficha e intenta nuevamente',
+                                        style: const TextStyle(color: AppColors.gris),
+                                        textAlign: TextAlign.center,
                                       ),
                                     ],
                                   ),
@@ -367,7 +348,7 @@ class _FichasScreenState extends State<FichasScreen> {
                                   ),
                                 ),
                   const SizedBox(height: 20),
-                  if (!_isLoading && _fichas.isNotEmpty)
+                  if (!_isLoading && _pageItemsFiltrados.isNotEmpty)
                     Align(
                       alignment: Alignment.centerRight,
                       child: PaginationControls(
@@ -383,41 +364,6 @@ class _FichasScreenState extends State<FichasScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDropdown<T>({
-    required String hint,
-    required T? value,
-    required List<T> items,
-    required ValueChanged<T?> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppColors.blanco,
-        borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: AppColors.bordeClaro),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          value: value,
-          hint: Text(hint, style: const TextStyle(color: AppColors.gris)),
-          isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.gris),
-          elevation: 2,
-          style: const TextStyle(color: AppColors.textoOscuro, fontSize: 14),
-          dropdownColor: AppColors.blanco,
-          items: items.map<DropdownMenuItem<T>>((T itemValue) {
-            return DropdownMenuItem<T>(
-              value: itemValue,
-              child: Text(itemValue.toString()),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
       ),
     );
   }

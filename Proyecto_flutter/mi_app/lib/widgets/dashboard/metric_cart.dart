@@ -18,11 +18,21 @@ class MetricCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: Colors.black54, width: 1.5),
+          decoration: BoxDecoration(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(12.0),
+      border: Border.all(
+        color: Colors.black.withOpacity(0.15), 
+        width: 1.2,
       ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05), 
+          blurRadius: 6,
+          offset: const Offset(0, 3),
+        ),
+      ],
+),
       child: Text.rich(
         TextSpan(
           style: TextStyle(color: textColor, fontSize: 16),

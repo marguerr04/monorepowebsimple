@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mi_app/screens/dashboard.dart';
 
+// 🎨 Paleta VitaLog
 const Color cyanClaro = Color(0xFF63FFAC);
 const Color cyanOscuro = Color(0xFF30CBA1);
 const Color negro = Color(0xFF000000);
@@ -22,202 +23,191 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: blanco,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32.0,
-                  vertical: 40.0,
+      backgroundColor: const Color(0xFFF3F4F6), // Gris claro de fondo general
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          child: Container(
+            width: 420,
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+            decoration: BoxDecoration(
+              color: blanco,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: Offset(0, 5),
+              ],
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 🩺 Título
+                  const Text(
+                    'Inicio sesión paciente',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: negro,
                     ),
-                  ],
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Título
-                      Text(
-                        'login Paciente',
-                        style: TextStyle(
-                          color: negro,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  ),
+                  const SizedBox(height: 30),
 
-                      SizedBox(height: 30),
-
-                      // Logo
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundColor: blanco,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.medical_services_outlined,
-                              color: cyanOscuro,
-                              size: 40,
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'VitaLog',
-                              style: TextStyle(
-                                color: negro,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 40),
-
-                      // Campo correo
-                      TextFormField(
-                        controller: correoController,
-                        style: TextStyle(color: negro),
-                        decoration: InputDecoration(
-                          labelText: 'Correo',
-                          labelStyle: TextStyle(color: Colors.grey[600]),
-                          filled: true,
-                          fillColor: blanco,
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: cyanClaro, width: 2.0),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: cyanOscuro, width: 2.0),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: Colors.red, width: 2.0),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: Colors.red, width: 2.0),
-                          ),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, ingresa tu correo';
-                          }
-                          if (!value.contains('@')) {
-                            return 'Por favor, ingresa un correo válido';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      SizedBox(height: 20),
-
-                      TextFormField(
-                        controller: contrasenaController,
-                        style: TextStyle(color: negro),
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: 'Contraseña',
-                          labelStyle: TextStyle(color: Colors.grey[600]),
-                          filled: true,
-                          fillColor: blanco,
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: cyanClaro, width: 2.0),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: cyanOscuro, width: 2.0),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: Colors.red, width: 2.0),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: Colors.red, width: 2.0),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, ingresa tu contraseña';
-                          }
-                          if (value.length < 6) {
-                            return 'La contraseña debe tener al menos 6 caracteres';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      SizedBox(height: 30),
-
-                      // Botón y navegación
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: cyanClaro,
-                          minimumSize: Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DashboardPage(),
-                              ),
-                            );
-                          }
-                        },
-                        child: Text(
-                          'INGRESAR',
+                  // 🧿 Logo circular
+                  CircleAvatar(
+                    radius: 55,
+                    backgroundColor: blanco,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.medical_services_outlined,
+                            color: cyanOscuro, size: 40),
+                        const SizedBox(height: 6),
+                        Text(
+                          'VitaLog',
                           style: TextStyle(
-                            color: negro,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            color: cyanOscuro,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                      ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
 
-                      SizedBox(height: 15),
+                  // 🧾 Campo correo
+                  _buildInputField(
+                    controller: correoController,
+                    label: 'Correo',
+                    hint: 'ejemplo@correo.com',
+                    icon: Icons.email_outlined,
+                    keyboard: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 20),
 
-                      TextButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Función de recuperación próximamente'),
+                  // 🔐 Campo contraseña
+                  _buildInputField(
+                    controller: contrasenaController,
+                    label: 'Contraseña',
+                    hint: '••••••••',
+                    icon: Icons.lock_outline,
+                    obscure: true,
+                  ),
+                  const SizedBox(height: 30),
+
+                  // 🟩 Botón de login tipo Ionic
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DashboardPage(),
                             ),
                           );
-                        },
-                        child: Text(
-                          '¿Olvidaste tu contraseña?',
-                          style: TextStyle(color: cyanOscuro),
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: cyanOscuro,
+                        minimumSize: const Size(150, 55),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: const BorderSide(
+                            color: Color(0xFF218B6F),
+                            width: 3,
+                          ),
+                        ),
+                        shadowColor: cyanOscuro.withOpacity(0.4),
+                        elevation: 6,
+                      ),
+                      child: const Text(
+                        'INGRESAR',
+                        style: TextStyle(
+                          color: negro,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          letterSpacing: 1,
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 16),
+
+                  // 🔗 Recuperar contraseña
+                  TextButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Función en desarrollo...')),
+                      );
+                    },
+                    child: const Text(
+                      '¿Olvidaste tu contraseña?',
+                      style: TextStyle(
+                        color: cyanOscuro,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    bool obscure = false,
+    TextInputType keyboard = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboard,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Campo obligatorio';
+        }
+        if (label == 'Correo' && !value.contains('@')) {
+          return 'Correo no válido';
+        }
+        return null;
+      },
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: cyanOscuro),
+        labelText: label,
+        hintText: hint,
+        filled: true,
+        fillColor: blanco,
+        labelStyle: TextStyle(color: gris.withOpacity(0.8)),
+        hintStyle: TextStyle(color: gris.withOpacity(0.5)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: cyanClaro, width: 2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: cyanOscuro, width: 2.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
       ),
     );
