@@ -65,4 +65,12 @@ export class BackendService {
   getCentrosMedicos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/centros-medicos`);
   }
+
+  guardarConsulta(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/consultas`, datos);
+  }
+
+  guardarExamen(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/examenes`, datos);
+  }
 }

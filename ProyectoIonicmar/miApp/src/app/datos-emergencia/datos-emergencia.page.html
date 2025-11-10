@@ -17,42 +17,112 @@
   <div class="content-header">
       <h3>Datos de emergencia</h3>
 
-  <ion-list class="bordered-list">
-    <ion-item 
-        button 
-        detail="true" 
-        (click)="mostrarAlergias = !mostrarAlergias"
-        name="Alergias">
-        Alergias
-        <div *ngIf="mostrarAlergias" class="ion-padding">
-        <p><strong>Alergias:</strong> Penicilina, Polvo, Polen</p>
-        <p><strong>Medicamentos:</strong> Ibuprofeno, Paracetamol</p>
-        <p><strong>Alimentos:</strong> Mariscos, Nueces</p></div>
-    </ion-item>
+    <ion-list class="bordered-list">
+      <ion-item 
+          button 
+          detail="true" 
+          (click)="toggleAlergia()"
+          name="Alergias">
+          Alergias
+          
+          <div *ngIf="mostrarAlergias" class="ion-padding">
+            
+            <div *ngIf="isLoadingAlergias">
+              <p>Cargando alergias...</p>
+            </div>
+            
+            <div *ngIf="errorAlergias && !isLoadingAlergias">
+              <p style="color: red;">{{ errorAlergias }}</p>
+            </div>
+            
+            <div *ngIf="!isLoadingAlergias && !errorAlergias">
+              
+              <div *ngIf="alergias.length > 0">
+                <div *ngFor="let alergia of alergias">
+                  <p>
+                    <strong>{{ alergia.nombre }}</strong>
+                    <span *ngIf="alergia.tipo"> - {{ alergia.tipo }}</span>
+                    <span *ngIf="alergia.severidad"> ({{ alergia.severidad }})</span>
+                  </p>
+                </div>
+              </div>
+              
+              <div *ngIf="alergias.length === 0">
+                <p>No se registran alergias</p>
+              </div>
+            </div>
+          </div>
+      </ion-item>
 
-    <ion-item 
-        button 
-        detail="true" 
-        (click)="mostrarCondiciones = !mostrarCondiciones"
-        name="Condiciones">
-        Condiciones médicas
-        <div *ngIf="mostrarCondiciones" class="ion-padding">
-        <p><strong>Dolores:</strong> Rodilla</p>
-        <p><strong>Diabetes:</strong> Tipo 2</p></div>
-    </ion-item>
+      <ion-item 
+          button 
+          detail="true" 
+          (click)="toggleCondicion()"
+          name="Condiciones">
+          Condiciones médicas
+          
+          <div *ngIf="mostrarCondiciones" class="ion-padding">
+            
+            <div *ngIf="isLoadingDiagnosticos">
+              <p>Cargando condiciones médicas...</p>
+            </div>
+            
+            <div *ngIf="errorDiagnosticos && !isLoadingDiagnosticos">
+              <p style="color: red;">{{ errorDiagnosticos }}</p>
+            </div>
+            
+            <div *ngIf="!isLoadingDiagnosticos && !errorDiagnosticos">
+              
+              <div *ngIf="diagnosticos.length > 0">
+                <div *ngFor="let diagnostico of diagnosticos">
+                  <p>
+                    <strong>{{ diagnostico.nombre }}</strong>
+                  </p>
+                </div>
+              </div>
+              
+              <div *ngIf="diagnosticos.length === 0">
+                <p>No se registran condiciones médicas</p>
+              </div>
+            </div>
+          </div>
+      </ion-item>
 
-    <ion-item 
-        button 
-        detail="true" 
-        (click)="mostrarSangre = !mostrarSangre"
-        name="TipoSangre">
-        Tipo de sangre
-        <div *ngIf="mostrarSangre" class="ion-padding">
-        <p><strong>Tipo de sangre:</strong> AB-</p>
-        <p><strong>Puede donar a:</strong> AB+ y AB-</p>
-        <p><strong>Puede recibir:</strong> A-, B-, AB- y O-</p></div>
-    </ion-item>
-  </ion-list>
+      <ion-item 
+          button 
+          detail="true" 
+          (click)="toggleSangre()"
+          name="TipoSangre">
+          Tipo de sangre
+          
+          <div *ngIf="mostrarSangre" class="ion-padding">
+            
+            <div *ngIf="isLoadingSangre">
+              <p>Cargando tipo de sangre...</p>
+            </div>
+            
+            <div *ngIf="errorSangre && !isLoadingSangre">
+              <p style="color: red;">{{ errorSangre }}</p>
+            </div>
+            
+            <div *ngIf="!isLoadingSangre && !errorSangre && tipoSangre">
+              <p><strong>Tipo de sangre:</strong> {{ tipoSangre }}</p>
+              
+              <div *ngIf="getCompatibilidadSangre(tipoSangre).puedeDonar.length > 0">
+                <p><strong>Puede donar a:</strong> {{ getCompatibilidadSangre(tipoSangre).puedeDonar.join(', ') }}</p>
+              </div>
+              
+              <div *ngIf="getCompatibilidadSangre(tipoSangre).puedeRecibir.length > 0">
+                <p><strong>Puede recibir de:</strong> {{ getCompatibilidadSangre(tipoSangre).puedeRecibir.join(', ') }}</p>
+              </div>
+            </div>
+            
+            <div *ngIf="!isLoadingSangre && !errorSangre && !tipoSangre">
+              <p>Tipo de sangre no registrado</p>
+            </div>
+          </div>
+      </ion-item>
+    </ion-list>
 
   <div class="botones-fila">
     <ion-button class="home-button" routerLink="/home">

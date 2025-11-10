@@ -1,15 +1,19 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import {
   IonContent, IonHeader, IonTitle, IonToolbar, IonGrid, IonSpinner,
   IonRow, IonCol, IonCard, IonCardHeader, IonCardContent,
   IonItem, IonAvatar, IonLabel, IonCardTitle, IonCardSubtitle,
-  IonButton, IonIcon, IonList, IonButtons, IonMenuButton, IonModal
+  IonButton, IonIcon, IonList, IonButtons, IonMenuButton, IonModal,
+  IonActionSheet, AlertController, ActionSheetButton
 } from '@ionic/angular/standalone';
 import { CabezaPerfilComponent } from '../componentes/cabeza-perfil/cabeza-perfil.component';
 import { BloqueContenidoComponent } from '@app/componentes/bloque-contenido/bloque-contenido.component';
 import { BackendService } from '@app/core/servicios/backend.service';
+import { CameraService } from '@app/services/camera';
+import { addIcons } from 'ionicons';
+import { camera, images, document } from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -21,18 +25,130 @@ import { BackendService } from '@app/core/servicios/backend.service';
     IonContent, IonHeader, IonTitle, IonToolbar, IonGrid, IonSpinner,
     IonRow, IonCol, IonCard, IonCardHeader, IonCardContent,
     IonItem, IonAvatar, IonLabel, IonCardTitle, IonCardSubtitle, IonModal,
-    IonButton, IonIcon, IonList, IonButtons, IonMenuButton, CabezaPerfilComponent, BloqueContenidoComponent
+    IonButton, IonIcon, IonList, IonButtons, IonMenuButton, CabezaPerfilComponent, BloqueContenidoComponent,
+    IonActionSheet
   ],
 })
 export class HomePage implements OnInit {
-  constructor(private router: Router, private backendService: BackendService) { }
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   pacienteActual: any = null;
   institucionMedica: string = 'Cargando...';
 
+  imagenFichaMedica: string | null = null;
+  mostrarActionSheet: boolean = false;
+
+  constructor(
+    private router: Router, 
+    private backendService: BackendService,
+    private cameraService: CameraService,
+    private alertController: AlertController
+  ) {
+    addIcons({ camera, images, document });
+  }
+
   ngOnInit() {
     this.cargarPacienteActual();
     this.testConnection();
+  }
+
+  actionSheetButtons: ActionSheetButton[] = [
+    {
+      text: 'Tomar Foto',
+      icon: 'camera',
+      handler: () => {
+        this.tomarFotoFicha();
+        return false;
+      }
+    },
+    {
+      text: 'Galería',
+      icon: 'images',
+      handler: () => {
+        this.seleccionarDeGaleriaFicha();
+        return false;
+      }
+    },
+    {
+      text: 'Archivo',
+      icon: 'document',
+      handler: () => {
+        this.abrirSelectorArchivos();
+        return false;
+      }
+    },
+    {
+      text: 'Cancelar',
+      role: 'cancel',
+      handler: () => {
+        this.mostrarActionSheet = false;
+      }
+    }
+  ];
+
+  async mostrarOpcionesSubir() {
+    this.mostrarActionSheet = true;
+  }
+
+  async tomarFotoFicha() {
+    try {
+      const fotoDataUrl = await this.cameraService.tomarFoto();
+      this.imagenFichaMedica = fotoDataUrl;
+      await this.mostrarMensaje('Éxito', 'Foto de ficha médica tomada correctamente');
+    } catch (error: any) {
+      console.error('Error tomando foto:', error);
+      await this.mostrarMensaje('Error', error.message || 'No se pudo tomar la foto');
+    } finally {
+      this.mostrarActionSheet = false;
+    }
+  }
+
+  async seleccionarDeGaleriaFicha() {
+    try {
+      const fotoDataUrl = await this.cameraService.seleccionarDeGaleria();
+      this.imagenFichaMedica = fotoDataUrl;
+      await this.mostrarMensaje('Éxito', 'Imagen seleccionada correctamente');
+    } catch (error: any) {
+      console.error('Error seleccionando imagen:', error);
+      await this.mostrarMensaje('Error', error.message || 'No se pudo seleccionar la imagen');
+    } finally {
+      this.mostrarActionSheet = false;
+    }
+  }
+
+  abrirSelectorArchivos() {
+    this.fileInput.nativeElement.click();
+    this.mostrarActionSheet = false;
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.imagenFichaMedica = e.target.result;
+          this.mostrarMensaje('Éxito', 'Archivo de imagen cargado correctamente');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        this.mostrarMensaje('Error', 'Por favor selecciona un archivo de imagen');
+      }
+    }
+  }
+
+  descargarPDF() {
+    // Aquí puedes implementar la descarga del PDF
+    this.mostrarMensaje('Info', 'Función de descarga PDF en desarrollo');
+  }
+
+  private async mostrarMensaje(header: string, message: string) {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 
   connectionStatus: string = 'Probando conexión...';

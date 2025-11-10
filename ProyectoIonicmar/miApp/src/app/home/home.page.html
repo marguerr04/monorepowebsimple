@@ -39,16 +39,38 @@
       </ion-header>
       
       <ion-content class="modal-contenido">
-        <ion-button class="login-button">
-          Descargar PDF
-        </ion-button>
+        <div class="botones-lengüeta">
+          <ion-button class="login-button" (click)="mostrarOpcionesSubir()">
+            Subir archivo
+          </ion-button>
+
+          <ion-button class="login-button" (click)="descargarPDF()">
+            Descargar PDF
+          </ion-button>
+        </div>
 
         <div class="lugar-imagen">
-          <img src="assets/ficha_medica.png" alt="Ficha Médica" />
+          <img 
+            [src]="imagenFichaMedica || 'assets/ficha_medica.png'" 
+            [alt]="imagenFichaMedica ? 'Ficha Médica Subida' : 'Ficha Médica Placeholder'" 
+          />
+          <div *ngIf="!imagenFichaMedica" class="mensaje-placeholder">
+            <p>Suba una imagen de su ficha médica</p>
+          </div>
         </div>
+
+        <input type="file" hidden #fileInput (change)="onFileSelected($event)" accept="image/*,.pdf"/>
       </ion-content>
     </ng-template>
   </ion-modal>
+
+  <ion-action-sheet
+    [isOpen]="mostrarActionSheet"
+    header="Seleccionar archivo"
+    [buttons]="actionSheetButtons"
+    (didDismiss)="mostrarActionSheet = false">
+  </ion-action-sheet>
+
 </ion-col>
 </ion-row>
 </ion-grid>

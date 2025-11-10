@@ -6,15 +6,15 @@
 
 <ion-content [fullscreen]="true">
   <div class="form-container">
-    <h1 class="login-title">Inicio sesión paciente</h1>
 
     <div class="logo">
       <img src="assets/img/VitaLog_v2.png" alt="Logo" />
     </div>
 
-    <div class="list-container">
+    <h1 class="login-title">Iniciar sesión</h1>
+
       <ion-item class="input-item">
-        <ion-label position="floating">RUT:</ion-label>
+        <ion-label position="floating">RUT:</ion-label><br>
         <ion-input 
           type="text" 
           [(ngModel)]="rut" 
@@ -34,14 +34,16 @@
         <ion-input type="password" [(ngModel)]="clave" placeholder="••••••" minlength="8" required></ion-input>
       </ion-item>
 
-      <ion-button 
-        expand="block" 
-        class="login-button" 
-        (click)="enviar()"
-        [disabled]="!validarFormulario() || isLoading">
-        <ion-spinner *ngIf="isLoading"></ion-spinner>
-        {{ isLoading ? 'Verificando...' : 'Ingresar' }}
-      </ion-button></div>
+      <div class="boton-contenedor">
+        <ion-button 
+          expand="block" 
+          class="login-button" 
+          (click)="enviar()"
+          [disabled]="!validarFormulario() || isLoading">
+          <ion-spinner *ngIf="isLoading"></ion-spinner>
+          {{ isLoading ? 'Verificando...' : 'Ingresar' }}
+        </ion-button>
+      </div>
     <br><br>
   </div>
 

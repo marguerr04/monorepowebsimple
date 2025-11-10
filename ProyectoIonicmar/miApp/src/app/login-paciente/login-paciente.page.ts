@@ -35,13 +35,11 @@ export class LoginPacientePage implements OnInit {
   }
 
   validarRUT(): boolean {
-    // Validación básica de RUT chileno
     const rutLimpio = this.rut.replace(/[^0-9kK]/g, '');
     return rutLimpio.length >= 8 && rutLimpio.length <= 9;
   }
 
   formatearRUT() {
-    // Formatear RUT automáticamente mientras escribe
     if (this.rut.length > 0) {
       let rutLimpio = this.rut.replace(/[^0-9kK]/g, '');
       
@@ -49,7 +47,6 @@ export class LoginPacientePage implements OnInit {
         const cuerpo = rutLimpio.slice(0, -1);
         const dv = rutLimpio.slice(-1).toUpperCase();
         
-        // Formatear con puntos y guión
         let rutFormateado = cuerpo.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         rutFormateado = rutFormateado + '-' + dv;
         
@@ -76,15 +73,10 @@ export class LoginPacientePage implements OnInit {
         clave: this.clave
       });
 
-      // PRIMERO: Buscar paciente por RUT limpio
       console.log('🔍 Buscando paciente con RUT limpio:', rutLimpio);
-      // const paciente = await this.backendService.buscarPacientePorRUT(rutLimpio).toPromise(); // <--- COMENTADA
-      
-      // console.log('✅ Paciente encontrado:', paciente);
 
-      // SEGUNDO: Hacer login con RUT limpio
       const loginResult = await this.backendService.loginPaciente(
-        rutLimpio,  // ← ENVIAR RUT LIMPIO al backend
+        rutLimpio,
         this.correo,
         this.clave
       ).toPromise();
