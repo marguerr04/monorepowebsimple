@@ -931,3 +931,35 @@ app.get('/api/ficha/:id/resumen-detallado', async (req, res) => {
     res.status(500).json({ error: 'Error al obtener resumen detallado', details: error.message });
   }
 });
+
+app.get('/api/pacientes/:id/tratamiento', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    console.log('🔍 Buscando tratamiento para paciente ID:', id);
+    
+    const result = await db.query(`
+      SELECT 
+        rm.receta_id,
+        rm.dosis,
+        rm.espermanente,
+        m.nombre as medicamento,
+        tf.nombre as frecuencia,
+        r.fecha as fecha_receta,
+        c.fecha as fecha_consulta
+      FROM receta_med rm
+      INNER JOIN receta r ON rm.receta_id = r.id
+      INNER JOIN consulta c ON r.consulta_id = c.id
+      INNER JOIN medicamento m ON rm.medicamento_id = m.id
+      INNER JOIN tipo_freq tf ON rm.tipo_freq_id = tf.id
+      WHERE c.paciente_id = $1
+      ORDER BY r.fecha DESC, rm.espermanente DESC
+    `, [id]);
+    
+    console.log('✅ Tratamientos encontrados:', result.rows.length);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error obteniendo tratamiento:', error);
+    res.status(500).json({ error: error.message });
+  }
+});

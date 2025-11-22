@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
     "name": "laravel/laravel",
     "type": "project",
     "description": "The Laravel Framework.",
@@ -65,10 +64,3 @@
     "minimum-stability": "stable",
     "prefer-stable": true
 }
-// testeo comentrario 
-=======
-    "require-dev": {
-        "laravel/breeze": "^1.19"
-    }
-}
->>>>>>> 55e37d6 (Primer commit desde monorepo)
