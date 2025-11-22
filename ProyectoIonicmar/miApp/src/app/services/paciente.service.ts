@@ -18,6 +18,16 @@ export interface TipoSangre {
   tiposangre: string;
 }
 
+export interface Tratamiento {
+  receta_id: number;
+  medicamento: string;
+  dosis: string;
+  frecuencia: string;
+  espermanente: boolean;
+  fecha_receta: string;
+  fecha_consulta: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -40,5 +50,9 @@ export class PacienteService {
 
   getTipoSangreByPacienteId(pacienteId: number): Observable<TipoSangre> {
     return this.http.get<TipoSangre>(`${this.apiUrl}/pacientes/${pacienteId}/tipo-sangre`);
+  }
+
+  getTratamientoByPacienteId(pacienteId: number): Observable<Tratamiento[]> {
+  return this.http.get<Tratamiento[]>(`${this.apiUrl}/pacientes/${pacienteId}/tratamiento`);
   }
 }

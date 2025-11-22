@@ -17,6 +17,7 @@ import { Paciente } from '../models/ficha-medica';
 @Injectable({
   providedIn: 'root'
 })
+
 export class PacientesService {
   private firestore: Firestore = inject(Firestore);
   private pacientesCollection = collection(this.firestore, 'pacientes');

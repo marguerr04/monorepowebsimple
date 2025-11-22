@@ -76,6 +76,10 @@ export const routes: Routes = [
     path: 'test-conexion',
     loadComponent: () => import('./test-conexion/test-conexion.page').then( m => m.TestConexionPage)
   },
+  {
+    path: 'tratamiento',
+    loadComponent: () => import('./tratamiento/tratamiento.page').then( m => m.TratamientoPage)
+  },
 
 ];
 

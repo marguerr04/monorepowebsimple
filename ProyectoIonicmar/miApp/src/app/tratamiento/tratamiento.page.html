@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/home">Home</ion-breadcrumb>
+      <ion-breadcrumb routerLink="/tratamiento">Tratamiento</ion-breadcrumb>
+    </ion-breadcrumbs>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <app-cabeza-perfil></app-cabeza-perfil>
+  <br>
+  <div class="content-header">
+    <h3>Tratamiento</h3>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="loading-container">
+      <p>Cargando tratamiento...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error && !isLoading" class="error-container">
+      <p style="color: red;">{{ error }}</p>
+    </div>
+
+    <!-- Lista de tratamientos -->
+    <ion-list class="bordered-list" *ngIf="!isLoading && !error">
+      
+      <!-- Mensaje si no hay tratamientos -->
+      <div *ngIf="tratamientos.length === 0" class="no-data">
+        <ion-icon name="alert-circle" size="large"></ion-icon>
+        <p>No se encontraron tratamientos registrados</p>
+      </div>
+
+      <!-- Tratamientos -->
+      <ion-item *ngFor="let tratamiento of tratamientos" class="tratamiento-item">
+        <ion-label class="tratamiento-content">
+          
+          <!-- Header del tratamiento -->
+          <div class="tratamiento-header">
+            <h2>
+              <ion-icon name="medical" slot="start"></ion-icon>
+              {{ tratamiento.medicamento }}
+            </h2>
+            <ion-badge [color]="getColorPermanente(tratamiento.espermanente)">
+              {{ getTextoPermanente(tratamiento.espermanente) }}
+            </ion-badge>
+          </div>
+
+          <!-- Detalles del tratamiento -->
+          <div class="tratamiento-details">
+            <ion-chip color="primary">
+              <ion-icon name="time"></ion-icon>
+              <ion-label>Dosis: {{ tratamiento.dosis }}</ion-label>
+            </ion-chip>
+
+            <ion-chip color="secondary">
+              <ion-icon name="time"></ion-icon>
+              <ion-label>Frecuencia: {{ tratamiento.frecuencia }}</ion-label>
+            </ion-chip>
+
+            <ion-chip color="tertiary">
+              <ion-icon name="calendar"></ion-icon>
+              <ion-label>Recetado: {{ formatearFecha(tratamiento.fecha_receta) }}</ion-label>
+            </ion-chip>
+          </div>
+
+          <!-- Consulta relacionada -->
+          <div class="consulta-info">
+            <small>Consulta: {{ formatearFecha(tratamiento.fecha_consulta) }}</small>
+          </div>
+
+        </ion-label>
+      </ion-item>
+
+    </ion-list>
+
+    <div class="botones-fila">
+      <ion-button class="home-button" routerLink="/home">
+        Home
+      </ion-button>
+    </div>
+    <br>
+
+  </div>  
+</ion-content>

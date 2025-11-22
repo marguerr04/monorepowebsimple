@@ -13,7 +13,8 @@ import { BloqueContenidoComponent } from '@app/componentes/bloque-contenido/bloq
 import { BackendService } from '@app/core/servicios/backend.service';
 import { CameraService } from '@app/services/camera';
 import { addIcons } from 'ionicons';
-import { camera, images, document } from 'ionicons/icons';
+import { camera, images, document, download } from 'ionicons/icons';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-home',
@@ -37,6 +38,7 @@ export class HomePage implements OnInit {
 
   imagenFichaMedica: string | null = null;
   mostrarActionSheet: boolean = false;
+  archivoSubido: File | null = null;
 
   constructor(
     private router: Router, 
@@ -44,7 +46,7 @@ export class HomePage implements OnInit {
     private cameraService: CameraService,
     private alertController: AlertController
   ) {
-    addIcons({ camera, images, document });
+    addIcons({ camera, images, document, download });
   }
 
   ngOnInit() {
@@ -94,6 +96,7 @@ export class HomePage implements OnInit {
     try {
       const fotoDataUrl = await this.cameraService.tomarFoto();
       this.imagenFichaMedica = fotoDataUrl;
+      this.archivoSubido = null;
       await this.mostrarMensaje('Éxito', 'Foto de ficha médica tomada correctamente');
     } catch (error: any) {
       console.error('Error tomando foto:', error);
@@ -107,6 +110,7 @@ export class HomePage implements OnInit {
     try {
       const fotoDataUrl = await this.cameraService.seleccionarDeGaleria();
       this.imagenFichaMedica = fotoDataUrl;
+      this.archivoSubido = null;
       await this.mostrarMensaje('Éxito', 'Imagen seleccionada correctamente');
     } catch (error: any) {
       console.error('Error seleccionando imagen:', error);
@@ -124,6 +128,8 @@ export class HomePage implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.archivoSubido = file;
+      
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (e: any) => {
@@ -131,15 +137,113 @@ export class HomePage implements OnInit {
           this.mostrarMensaje('Éxito', 'Archivo de imagen cargado correctamente');
         };
         reader.readAsDataURL(file);
+      } else if (file.type === 'application/pdf') {
+        this.imagenFichaMedica = 'assets/pdf-icon.png';
+        this.mostrarMensaje('Éxito', 'Archivo PDF cargado correctamente');
       } else {
-        this.mostrarMensaje('Error', 'Por favor selecciona un archivo de imagen');
+        this.mostrarMensaje('Error', 'Por favor selecciona un archivo de imagen o PDF');
       }
     }
   }
 
-  descargarPDF() {
-    // Aquí puedes implementar la descarga del PDF
-    this.mostrarMensaje('Info', 'Función de descarga PDF en desarrollo');
+  async descargarPDF() {
+    if (!this.imagenFichaMedica && !this.archivoSubido) {
+      await this.mostrarMensaje('Error', 'No hay archivo para descargar');
+      return;
+    }
+
+    try {
+      if (this.archivoSubido && this.archivoSubido.type === 'application/pdf') {
+        await this.descargarArchivoDirecto(this.archivoSubido);
+        return;
+      }
+
+      if (this.imagenFichaMedica) {
+        await this.convertirImagenAPDF();
+      }
+
+    } catch (error: any) {
+      console.error('Error descargando PDF:', error);
+      await this.mostrarMensaje('Error', 'No se pudo descargar el archivo');
+    }
+  }
+
+  private async convertirImagenAPDF() {
+    const pdf = new jsPDF();
+    
+    const pacienteGuardado = localStorage.getItem('pacienteActual');
+    let nombrePaciente = 'ficha_medica';
+    
+    if (pacienteGuardado) {
+      try {
+        const paciente = JSON.parse(pacienteGuardado);
+        nombrePaciente = `ficha_medica_${paciente.nombre}_${paciente.apellido}`.replace(/\s+/g, '_');
+      } catch (error) {
+        console.error('Error obteniendo nombre del paciente:', error);
+      }
+    }
+
+    pdf.setFontSize(16);
+    pdf.text('Ficha Médica', 20, 20);
+
+    if (pacienteGuardado) {
+      try {
+        const paciente = JSON.parse(pacienteGuardado);
+        pdf.setFontSize(12);
+        pdf.text(`Paciente: ${paciente.nombre} ${paciente.apellido}`, 20, 35);
+        pdf.text(`RUT: ${paciente.rut || 'No registrado'}`, 20, 45);
+        pdf.text(`Fecha de descarga: ${new Date().toLocaleDateString('es-ES')}`, 20, 55);
+      } catch (error) {
+        console.error('Error agregando información del paciente:', error);
+      }
+    }
+
+    if (this.imagenFichaMedica) {
+      try {
+        const imgProps = pdf.getImageProperties(this.imagenFichaMedica);
+        const pdfWidth = pdf.internal.pageSize.getWidth() - 40; 
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        pdf.addImage(this.imagenFichaMedica, 'JPEG', 20, 70, pdfWidth, pdfHeight);
+        
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        let heightLeft = pdfHeight;
+        let position = 70;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - pdfHeight;
+          pdf.addPage();
+          pdf.addImage(this.imagenFichaMedica, 'JPEG', 20, position, pdfWidth, pdfHeight);
+          heightLeft -= pageHeight;
+        }
+      } catch (error) {
+        console.error('Error agregando imagen al PDF:', error);
+        pdf.text('Error al cargar la imagen de la ficha médica', 20, 70);
+      }
+    } else {
+      pdf.text('No hay imagen de ficha médica disponible', 20, 70);
+    }
+
+    pdf.save(`${nombrePaciente}.pdf`);
+    await this.mostrarMensaje('Éxito', 'PDF descargado correctamente');
+  }
+
+  private async descargarArchivoDirecto(file: File) {
+    try {
+      const fileURL = URL.createObjectURL(file);
+
+      window.open(fileURL, '_blank');
+      
+      await this.mostrarMensaje('Éxito', 'PDF abierto para descarga');
+      
+      setTimeout(() => {
+        URL.revokeObjectURL(fileURL);
+      }, 60000);
+      
+    } catch (error) {
+      console.error('Error descargando archivo:', error);
+      await this.mostrarMensaje('Error', 'No se pudo descargar el archivo');
+    }
   }
 
   private async mostrarMensaje(header: string, message: string) {
