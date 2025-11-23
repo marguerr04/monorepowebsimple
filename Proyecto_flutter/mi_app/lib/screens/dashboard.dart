@@ -125,14 +125,19 @@ class _DashboardPageState extends State<DashboardPage> {
       backgroundColor: Colors.grey[100], 
       body: Row(
         children: [
-          // Sidebar (NO CAMBIA)
+          // Sidebar
           AdminSidebar(
             selectedIndex: 0,
             onItemSelected: (index) {
-              if (index == 1) {
-                Navigator.pushNamed(context, '/fichas');
-              } else if (index == 2) {
-                Navigator.pushReplacementNamed(context, '/login');
+              switch (index) {
+                case 0: // Dashboard (estamos aquí)
+                  break;
+                case 1: // Panel de Control
+                  Navigator.pushReplacementNamed(context, '/panel-control');
+                  break;
+                case 2: // Cerrar sesión
+                  Navigator.pushReplacementNamed(context, '/login');
+                  break;
               }
             },
           ),

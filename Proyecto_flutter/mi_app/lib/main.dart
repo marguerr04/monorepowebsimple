@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 // Importa tus pantallas
 import 'screens/login.dart';
 import 'screens/dashboard.dart';
+import 'screens/panel_control_screen.dart';
 import 'screens/perfil.dart';
 import 'screens/test_connection_page.dart';
 import 'screens/fichas_screen.dart';
+import 'screens/consultas_screen.dart';
+import 'screens/examenes_screen.dart';
+import 'screens/pacientes_screen.dart';
 import 'screens/pokeapi_screen.dart'; // Mantienes esta si aún la usas
 // Importa tu paleta de colores
 import 'utils/app_colors.dart';
@@ -116,9 +120,13 @@ class ElMedicoApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginPage(),
         '/dashboard': (context) => const DashboardPage(),
+        '/panel-control': (context) => const PanelControlScreen(),
         '/perfil': (context) => PerfilPage(), // Asumiendo que existe o la crearás
         '/test-connection': (context) => const TestConnectionPage(),
         '/fichas': (context) => const FichasScreen(),
+        '/consultas': (context) => const ConsultasScreen(),
+        '/examenes': (context) => const ExamenesScreen(),
+        '/pacientes': (context) => const PacientesScreen(),
         '/pokeapi': (context) => const PokeApiScreen(), // Mantienes esta si la usas
         // '/main-layout': (context) => const MainLayoutScreen(), // Si usas el layout contenedor
       },

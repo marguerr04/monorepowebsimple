@@ -57,19 +57,20 @@ class AdminSidebar extends StatelessWidget {
 
           // Botones de Navegación
           SidebarButton(
-            text: 'Dashboard general',
+            text: 'Dashboard',
             onTap: () {
               onItemSelected(0); // Índice 0 para Dashboard
             },
             isSelected: selectedIndex == 0,
           ),
           SidebarButton(
-            text: 'Fichas médicas',
+            text: 'Gestionar Solicitudes y Fichas',
             onTap: () {
-              onItemSelected(1); // Índice 1 para Fichas
+              onItemSelected(1); // Índice 1 para Panel de Control
             },
             isSelected: selectedIndex == 1,
           ),
+          const Spacer(), // Empuja el botón de cerrar sesión hacia abajo
           SidebarButton(
             text: 'Cerrar sesión',
             onTap: () {
