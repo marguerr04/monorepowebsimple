@@ -125,10 +125,18 @@ class ElMedicoApp extends StatelessWidget {
         '/test-connection': (context) => const TestConnectionPage(),
         '/fichas': (context) => const FichasScreen(),
         '/consultas': (context) => const ConsultasScreen(),
-        '/examenes': (context) => const ExamenesScreen(),
         '/pacientes': (context) => const PacientesScreen(),
         '/pokeapi': (context) => const PokeApiScreen(), // Mantienes esta si la usas
         // '/main-layout': (context) => const MainLayoutScreen(), // Si usas el layout contenedor
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/examenes') {
+          final fichaId = settings.arguments as int?;
+          return MaterialPageRoute(
+            builder: (context) => ExamenesScreen(fichaIdInicial: fichaId),
+          );
+        }
+        return null;
       },
     );
   }

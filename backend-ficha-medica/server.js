@@ -156,7 +156,14 @@ app.post('/api/pacientes/login', async (req, res) => {
 
 app.get('/api/debug/todos-pacientes', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM paciente ORDER BY id');
+    const result = await db.query(`
+      SELECT 
+        p.*,
+        fm.id AS ficha_medica_id
+      FROM paciente p
+      LEFT JOIN ficha_medica fm ON p.id = fm.paciente_id
+      ORDER BY p.id
+    `);
     res.json(result.rows);
   } catch (error) {
     console.error('Error:', error);

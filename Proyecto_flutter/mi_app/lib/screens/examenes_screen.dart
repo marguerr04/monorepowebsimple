@@ -5,7 +5,9 @@ import '../models/examen_model.dart';
 import '../utils/app_colors.dart';
 
 class ExamenesScreen extends StatefulWidget {
-  const ExamenesScreen({super.key});
+  final int? fichaIdInicial;
+  
+  const ExamenesScreen({super.key, this.fichaIdInicial});
 
   @override
   State<ExamenesScreen> createState() => _ExamenesScreenState();
@@ -27,6 +29,14 @@ class _ExamenesScreenState extends State<ExamenesScreen> {
   void initState() {
     super.initState();
     _loadExamenes();
+    
+    // Si se recibió un fichaId inicial, aplicar el filtro automáticamente
+    if (widget.fichaIdInicial != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fichaIdController.text = widget.fichaIdInicial.toString();
+        _filtrarExamenes();
+      });
+    }
   }
 
   @override
@@ -80,28 +90,47 @@ class _ExamenesScreenState extends State<ExamenesScreen> {
   }
 
   void _filtrarExamenes() {
+    final fichaText = _fichaIdController.text.trim();
+    final examenText = _examenIdController.text.trim();
+    
+    // Si ambos campos están vacíos, mostrar todos
+    if (fichaText.isEmpty && examenText.isEmpty) {
+      setState(() => _examenesFiltered = _examenes);
+      return;
+    }
+
     setState(() {
       _examenesFiltered = _examenes.where((examen) {
         bool matchFicha = true;
         bool matchExamen = true;
         
-        // Filtro por ID de Ficha
-        if (_fichaIdController.text.isNotEmpty) {
-          final fichaId = _fichaIdController.text.toLowerCase().trim();
-          final examenFichaId = examen.fichaMedicaId?.toString().toLowerCase() ?? '';
-          matchFicha = examenFichaId.contains(fichaId) || 'f-$examenFichaId'.contains(fichaId);
+        // Filtro por ID de Ficha (comparación exacta)
+        if (fichaText.isNotEmpty) {
+          // Limpiar el texto de búsqueda (remover F- si existe)
+          String fichaSearch = fichaText.toUpperCase().replaceAll('F-', '').replaceAll('f-', '');
+          
+          if (examen.fichaMedicaId != null) {
+            matchFicha = examen.fichaMedicaId.toString() == fichaSearch;
+          } else {
+            matchFicha = false;
+          }
         }
         
-        // Filtro por ID de Examen
-        if (_examenIdController.text.isNotEmpty) {
-          final examenId = _examenIdController.text.toLowerCase().trim();
-          final examenIdStr = examen.id.toString().toLowerCase();
-          matchExamen = examenIdStr.contains(examenId);
+        // Filtro por ID de Examen (comparación exacta)
+        if (examenText.isNotEmpty) {
+          matchExamen = examen.id.toString() == examenText;
         }
         
         return matchFicha && matchExamen;
       }).toList();
     });
+
+    // Mostrar mensaje según resultados
+    if (_examenesFiltered.isEmpty) {
+      _showInfoSnackBar('No se encontraron exámenes con los filtros: ${fichaText.isNotEmpty ? "Ficha: $fichaText" : ""} ${examenText.isNotEmpty ? "Examen: $examenText" : ""}');
+    } else {
+      _showSuccessSnackBar('Se encontraron ${_examenesFiltered.length} examen(es)');
+    }
   }
 
   void _limpiarFiltros() {
@@ -110,6 +139,43 @@ class _ExamenesScreenState extends State<ExamenesScreen> {
       _examenIdController.clear();
       _examenesFiltered = _examenes;
     });
+    _showSuccessSnackBar('Filtros limpiados - Mostrando ${_examenes.length} exámenes');
+  }
+
+  void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showInfoSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.info, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.orange,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   String _formatearFecha(DateTime fecha) {

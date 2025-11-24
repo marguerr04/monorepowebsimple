@@ -10,6 +10,7 @@ class Paciente {
   final String? tipoSangre;
   final bool? activo;
   final DateTime? createdAt;
+  final int? fichaMedicaId;
 
   Paciente({
     required this.id,
@@ -23,6 +24,7 @@ class Paciente {
     this.tipoSangre,
     this.activo,
     this.createdAt,
+    this.fichaMedicaId,
   });
 
   factory Paciente.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class Paciente {
       createdAt: json['created_at'] != null 
         ? DateTime.tryParse(json['created_at'].toString()) 
         : null,
+      fichaMedicaId: json['ficha_medica_id'],
     );
   }
 
@@ -62,6 +65,7 @@ class Paciente {
       'tipo_sangre': tipoSangre,
       'activo': activo,
       if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
+      if (fichaMedicaId != null) 'ficha_medica_id': fichaMedicaId,
     };
   }
 

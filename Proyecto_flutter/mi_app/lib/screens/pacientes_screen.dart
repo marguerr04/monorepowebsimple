@@ -515,12 +515,11 @@ class _PacientesScreenState extends State<PacientesScreen> {
   }
 
   void _showExamenesPaciente(Paciente paciente) {
-    // TODO: Navegar a exámenes del paciente específico
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Funcionalidad de exámenes para ${paciente.nombreCompleto} próximamente'),
-        backgroundColor: AppColors.cyanOscuro,
-      ),
+    // Navegar a exámenes con el filtro de ficha médica del paciente
+    Navigator.pushNamed(
+      context,
+      '/examenes',
+      arguments: paciente.fichaMedicaId,
     );
   }
 }
