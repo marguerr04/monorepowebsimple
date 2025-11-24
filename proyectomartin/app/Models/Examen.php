@@ -10,6 +10,8 @@ class Examen extends Model
     use HasFactory;
 
     protected $table = 'examen';
+    
+    public $timestamps = false;
 
     protected $fillable = [
         'fecha',
