@@ -118,70 +118,131 @@ class _ConsultasScreenState extends State<ConsultasScreen> {
           Expanded(
             child: Column(
               children: [
-                // Header con título y botón crear
+                // Header mejorado con diseño moderno
                 Container(
-                  padding: const EdgeInsets.all(20.0),
+                  margin: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppColors.blanco,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.cyanOscuro.withOpacity(0.1),
+                        AppColors.cyanOscuro.withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.cyanOscuro.withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      // Título y subtítulo
-                      const Expanded(
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.cyanOscuro.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.medical_information_rounded,
+                          color: AppColors.cyanOscuro,
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Gestión de Consultas',
                               style: TextStyle(
-                                fontSize: 28,
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textoOscuro,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              'Administra las consultas médicas del sistema',
-                              style: TextStyle(
-                                fontSize: 16,
+                              'Total: ${_consultas.length} consultas médicas registradas',
+                              style: const TextStyle(
+                                fontSize: 14,
                                 color: AppColors.gris,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      
-                      // Botón crear consulta
+                      const SizedBox(width: 16),
                       ElevatedButton.icon(
                         onPressed: _showCreateConsultaDialog,
-                        icon: const Icon(Icons.add),
+                        icon: const Icon(Icons.add_rounded, size: 18),
                         label: const Text('Nueva Consulta'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.cyanOscuro,
-                          foregroundColor: AppColors.blanco,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 2,
                         ),
                       ),
                     ],
                   ),
                 ),
                 
-                // Barra de búsqueda
+                // Barra de búsqueda mejorada
                 Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
                   padding: const EdgeInsets.all(20.0),
-                  color: AppColors.blanco,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.gris.withOpacity(0.2),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        spreadRadius: 0,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
                   child: TextField(
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Buscar por diagnóstico, tratamiento o ID de paciente...',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+                      hintStyle: TextStyle(color: AppColors.gris.withOpacity(0.6)),
+                      prefixIcon: const Icon(Icons.search, color: AppColors.cyanOscuro),
+                      filled: true,
+                      fillColor: AppColors.fondoClaro,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: AppColors.gris.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: AppColors.cyanOscuro,
+                          width: 2,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                     ),
                     onChanged: (value) {
                       setState(() => _searchQuery = value);

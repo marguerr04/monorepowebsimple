@@ -14,19 +14,61 @@ app.get('/api', (req, res) => {
   res.json({ message: '✅ API de Fichas Médicas funcionando!' });
 });
 
-app.get('/api/consultas', async (req, res) => {
+app.get('/api/examenes', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM consulta ORDER BY fecha DESC LIMIT 10');
+    console.log('📊 Consultando exámenes con información de pacientes...');
+    const result = await db.query(`
+      SELECT 
+        e.id,
+        e.fecha,
+        e.estadoexamen,
+        e.comentariosexamen,
+        e.rutapdf,
+        e.ficha_medica_id,
+        e.tipo_examen_id,
+        e.sucursal_id,
+        e.paciente_id,
+        p.nombre AS paciente_nombre,
+        p.rut AS paciente_rut,
+        te.nombre AS tipo_examen_nombre,
+        s.dirSucurs AS centro_medico_nombre
+      FROM examen e
+      LEFT JOIN paciente p ON e.paciente_id = p.id
+      LEFT JOIN tipo_examen te ON e.tipo_examen_id = te.id
+      LEFT JOIN sucursal s ON e.sucursal_id = s.id
+      ORDER BY e.fecha DESC 
+      LIMIT 10
+    `);
+    console.log(`✅ ${result.rows.length} exámenes encontrados`);
+    if (result.rows.length > 0) {
+      console.log('Ejemplo:', JSON.stringify(result.rows[0], null, 2));
+    }
     res.json(result.rows);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('❌ Error en /api/examenes:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.get('/api/examenes', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM examen ORDER BY fecha DESC LIMIT 10');
+    const result = await db.query(`
+      SELECT 
+        e.*,
+        p.nombre as paciente_nombre,
+        p.rut as paciente_rut,
+        te.nombre as tipo_examen,
+        cm.nombrecentro as centro_medico,
+        e.estadoexamen as estado,
+        e.comentariosexamen as resultado
+      FROM examen e
+      LEFT JOIN ficha_medica fm ON e.ficha_medica_id = fm.id
+      LEFT JOIN paciente p ON fm.paciente_id = p.id
+      LEFT JOIN tipo_examen te ON e.tipo_examen_id = te.id
+      LEFT JOIN centro_medico cm ON e.sucursal_id = cm.id
+      ORDER BY e.fecha DESC 
+      LIMIT 10
+    `);
     res.json(result.rows);
   } catch (error) {
     console.error('Error:', error);
@@ -268,6 +310,43 @@ app.get('/api/pacientes/:id/tipo-sangre', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error obteniendo tipo de sangre:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET todas las consultas (con información de paciente y médico)
+app.get('/api/consultas', async (req, res) => {
+  try {
+    console.log('📋 Obteniendo todas las consultas...');
+    
+    const result = await db.query(`
+      SELECT 
+        c.id,
+        c.fecha,
+        c.paciente_id,
+        c.medico_id,
+        c.tipo_consult_id,
+        c.ficha_medica_id,
+        c.pesopaciente,
+        c.alturapaciente,
+        c.motivo_consulta,
+        p.nombre AS paciente_nombre,
+        p.rut AS paciente_rut,
+        m.nombre AS medico_nombre,
+        tc.nombre AS tipo_consulta
+      FROM consulta c
+      LEFT JOIN ficha_medica fm ON c.ficha_medica_id = fm.id
+      LEFT JOIN paciente p ON fm.paciente_id = p.id
+      LEFT JOIN medico m ON c.medico_id = m.id
+      LEFT JOIN tipo_consult tc ON c.tipo_consult_id = tc.id
+      ORDER BY c.fecha DESC
+      LIMIT 50
+    `);
+    
+    console.log(`✅ Consultas encontradas: ${result.rows.length}`);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error obteniendo consultas:', error);
     res.status(500).json({ error: error.message });
   }
 });

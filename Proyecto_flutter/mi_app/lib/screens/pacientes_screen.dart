@@ -235,128 +235,227 @@ class _PacientesScreenState extends State<PacientesScreen> {
   }
 
   Widget _buildPacienteCard(Paciente paciente) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.gris.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: InkWell(
-        onTap: () => _showPacienteDetails(paciente),
-        borderRadius: BorderRadius.circular(12.0),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              // Avatar
-              CircleAvatar(
-                backgroundColor: AppColors.cyanOscuro.withOpacity(0.1),
-                radius: 30,
-                child: Text(
-                  '${_getInitial(paciente.nombre)}${_getInitial(paciente.apellido)}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.cyanOscuro,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showPacienteDetails(paciente),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                // Avatar con iniciales
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.cyanOscuro.withOpacity(0.8),
+                        AppColors.cyanOscuro.withOpacity(0.6),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ),
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // Información principal
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      paciente.nombreCompleto,
+                  child: Center(
+                    child: Text(
+                      '${_getInitial(paciente.nombre)}${_getInitial(paciente.apellido)}',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textoOscuro,
+                        color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.badge, size: 16, color: AppColors.gris),
-                        const SizedBox(width: 4),
-                        Text(
-                          _pacientesService.formatearRut(paciente.rut),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.gris,
-                          ),
+                  ),
+                ),
+                
+                const SizedBox(width: 16),
+                
+                // Información principal
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        paciente.nombreCompleto,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textoOscuro,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.cake, size: 16, color: AppColors.gris),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${paciente.edad} años',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.gris,
-                          ),
-                        ),
-                        if (paciente.tipoSangre != null) ...[
-                          const SizedBox(width: 16),
-                          const Icon(Icons.bloodtype, size: 16, color: AppColors.gris),
-                          const SizedBox(width: 4),
-                          Text(
-                            paciente.tipoSangre!,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: AppColors.gris,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (paciente.email != null) ...[
-                      const SizedBox(height: 4),
+                      ),
+                      const SizedBox(height: 6),
+                      // Fila 1: RUT y Edad
                       Row(
                         children: [
-                          const Icon(Icons.email, size: 16, color: AppColors.gris),
-                          const SizedBox(width: 4),
                           Expanded(
-                            child: Text(
-                              paciente.email!,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: AppColors.gris,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.badge_outlined, size: 14, color: AppColors.gris),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _pacientesService.formatearRut(paciente.rut),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.gris,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.gris),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${paciente.edad} años',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.gris,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (paciente.tipoSangre != null) ...[
+                            const SizedBox(width: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.bloodtype_outlined, size: 12, color: Colors.red),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    paciente.tipoSangre!,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
+                      // Fila 2: Email (si existe)
+                      if (paciente.email != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.email_outlined, size: 14, color: AppColors.gris),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                paciente.email!,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.gris,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      // Fila 3: Teléfono (si existe)
+                      if (paciente.telefono != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.phone_outlined, size: 14, color: AppColors.gris),
+                            const SizedBox(width: 4),
+                            Text(
+                              paciente.telefono!,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.gris,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              
-              // Acciones
-              Column(
-                children: [
-                  IconButton(
-                    onPressed: () => _showConsultasPaciente(paciente),
-                    icon: const Icon(Icons.medical_services),
-                    color: AppColors.cyanOscuro,
-                    tooltip: 'Ver consultas',
+                
+                const SizedBox(width: 12),
+                
+                // Botones de acción
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.cyanOscuro.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  IconButton(
-                    onPressed: () => _showExamenesPaciente(paciente),
-                    icon: const Icon(Icons.science),
-                    color: AppColors.cyanOscuro,
-                    tooltip: 'Ver exámenes',
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Tooltip(
+                        message: 'Ver consultas',
+                        child: IconButton(
+                          onPressed: () => _showConsultasPaciente(paciente),
+                          icon: const Icon(Icons.medical_services_outlined),
+                          color: AppColors.cyanOscuro,
+                          constraints: const BoxConstraints(),
+                          padding: const EdgeInsets.all(8),
+                          iconSize: 18,
+                        ),
+                      ),
+                      Container(
+                        width: 1,
+                        height: 20,
+                        color: AppColors.gris.withOpacity(0.2),
+                      ),
+                      Tooltip(
+                        message: 'Ver exámenes',
+                        child: IconButton(
+                          onPressed: () => _showExamenesPaciente(paciente),
+                          icon: const Icon(Icons.science_outlined),
+                          color: AppColors.cyanOscuro,
+                          constraints: const BoxConstraints(),
+                          padding: const EdgeInsets.all(8),
+                          iconSize: 18,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ],
+                ),
+                
+                const SizedBox(width: 8),
+                
+                // Icono de navegación
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppColors.gris.withOpacity(0.5),
+                  size: 16,
+                ),
+              ],
+            ),
           ),
         ),
       ),

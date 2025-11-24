@@ -171,52 +171,112 @@ class _FichasScreenState extends State<FichasScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Gestión de Consultas Médicas',
-                        style: theme.textTheme.titleLarge?.copyWith(fontSize: 26),
+                  // Header mejorado
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.cyanOscuro.withOpacity(0.1),
+                          AppColors.cyanOscuro.withOpacity(0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      Row(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () { print('Crear Nueva Consulta'); },
-                            icon: const Icon(Icons.add, size: 18),
-                            label: const Text('Crear Nueva Consulta'),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.cyanOscuro.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.cyanOscuro.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          const SizedBox(width: 16),
-                          OutlinedButton.icon(
-                            onPressed: () { print('Generar Reporte'); },
-                            icon: const Icon(Icons.download, size: 18),
-                            label: const Text('Generar Reporte'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: theme.primaryColor,
-                              side: BorderSide(color: theme.primaryColor),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
+                          child: const Icon(
+                            Icons.medical_services_rounded,
+                            color: AppColors.cyanOscuro,
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Gestión de Consultas Médicas',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textoOscuro,
+                                ),
                               ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Total: $_totalItems consultas médicas registradas',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.gris,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton.icon(
+                          onPressed: () { print('Crear Nueva Consulta'); },
+                          icon: const Icon(Icons.add_rounded, size: 18),
+                          label: const Text('Crear Nueva Consulta'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.cyanOscuro,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 2,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        OutlinedButton.icon(
+                          onPressed: () { print('Generar Reporte'); },
+                          icon: const Icon(Icons.download_rounded, size: 18),
+                          label: const Text('Generar Reporte'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.cyanOscuro,
+                            side: const BorderSide(color: AppColors.cyanOscuro, width: 1.5),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 30),
                   
-                  // ✅ SOLO BUSCADOR POR ID FICHA
+                  // Buscador mejorado
                   Container(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.gris.withOpacity(0.2),
+                        width: 1,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withOpacity(0.03),
                           spreadRadius: 0,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
@@ -224,41 +284,91 @@ class _FichasScreenState extends State<FichasScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-
-
-
-                          
                           children: [
                             Expanded(
                               child: TextField(
                                 controller: _searchController,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   hintText: 'Buscar por ID Ficha...',
-                                  prefixIcon: Icon(Icons.search),
-                                  border: OutlineInputBorder(),
+                                  hintStyle: TextStyle(color: AppColors.gris.withOpacity(0.6)),
+                                  prefixIcon: const Icon(Icons.search, color: AppColors.cyanOscuro),
+                                  filled: true,
+                                  fillColor: AppColors.fondoClaro,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: AppColors.gris.withOpacity(0.2),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(
+                                      color: AppColors.cyanOscuro,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
                                 ),
                                 onSubmitted: (_) => _filtrarPorIDFicha(),
                               ),
                             ),
                             const SizedBox(width: 12),
-                            ElevatedButton(
+                            ElevatedButton.icon(
                               onPressed: _filtrarPorIDFicha,
-                              child: const Text('Buscar'),
+                              icon: const Icon(Icons.search, size: 18),
+                              label: const Text('Buscar'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.cyanOscuro,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 8),
-                            TextButton(
+                            TextButton.icon(
                               onPressed: _limpiarBusqueda,
-                              child: const Text('Limpiar'),
+                              icon: const Icon(Icons.clear, size: 18),
+                              label: const Text('Limpiar'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.gris,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Ejemplo: 1, F-1, 95, F-95',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              size: 14,
+                              color: AppColors.gris,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Ejemplo: 1, F-1, 95, F-95',
+                              style: TextStyle(
+                                color: AppColors.gris,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
