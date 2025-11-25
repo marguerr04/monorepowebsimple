@@ -20,6 +20,9 @@
         <!-- Alpine.js CDN -->
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         
+        <!-- SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        
         <style>
             [x-cloak] { display: none !important; }
         </style>
@@ -43,5 +46,34 @@
                 </div>
             </div>
         </div>
+
+        <!-- SweetAlert2 para mensajes de sesión -->
+        @if(session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 3000,
+                toast: true,
+                position: 'top-end'
+            });
+        </script>
+        @endif
+
+        @if(session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: '{{ session('error') }}',
+                showConfirmButton: true,
+                confirmButtonColor: '#dc2626'
+            });
+        </script>
+        @endif
+
+        @yield('scripts')
     </body>
 </html>

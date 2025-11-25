@@ -25,13 +25,11 @@ class Paciente extends Model
         'tipo_sangre_id',
         'clave',
         'telefono_emergencia',
-        'centro_medico_id',
-        'activo'
+        'centro_medico_id'
     ];
 
     protected $casts = [
         'fechanac' => 'date',
-        'activo' => 'boolean',
     ];
 
     // Relaciones

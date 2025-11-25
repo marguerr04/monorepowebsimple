@@ -39,11 +39,13 @@
                             <label for="rut" class="block text-sm font-medium text-gray-700 mb-2">
                                 RUT <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" 
+                            <input type="number" 
                                    name="rut" 
                                    id="rut" 
                                    value="{{ old('rut') }}"
                                    placeholder="12345678"
+                                   min="1000000"
+                                   max="99999999"
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200 focus:ring-opacity-50 @error('rut') border-red-500 @enderror"
                                    required>
                             @error('rut')
@@ -54,11 +56,12 @@
                             <label for="dv" class="block text-sm font-medium text-gray-700 mb-2">
                                 DV <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" 
+                            <input type="number" 
                                    name="dv" 
                                    id="dv" 
                                    value="{{ old('dv') }}"
-                                   maxlength="1"
+                                   min="0"
+                                   max="9"
                                    placeholder="9"
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200 focus:ring-opacity-50 @error('dv') border-red-500 @enderror"
                                    required>

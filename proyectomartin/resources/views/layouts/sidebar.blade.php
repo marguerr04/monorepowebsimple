@@ -102,40 +102,6 @@
         </a>
         @endif
 
-        <!-- Divider -->
-        <div class="pt-4 pb-2">
-            <div class="border-t border-emerald-700"></div>
-        </div>
-
-        <!-- Reportes -->
-        <a href="#" 
-           class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 group hover:bg-emerald-700/50">
-            <i class="fas fa-chart-bar text-xl text-emerald-200 group-hover:text-white transition-colors"></i>
-            <span x-show="!collapsed" 
-                  x-cloak
-                  class="ml-4 font-medium text-emerald-100 group-hover:text-white">
-                Reportes
-            </span>
-            <span x-show="collapsed" 
-                  class="absolute left-20 ml-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                Reportes
-            </span>
-        </a>
-
-        <!-- Configuración -->
-        <a href="#" 
-           class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 group hover:bg-emerald-700/50">
-            <i class="fas fa-cog text-xl text-emerald-200 group-hover:text-white transition-colors"></i>
-            <span x-show="!collapsed" 
-                  x-cloak
-                  class="ml-4 font-medium text-emerald-100 group-hover:text-white">
-                Configuración
-            </span>
-            <span x-show="collapsed" 
-                  class="absolute left-20 ml-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                Configuración
-            </span>
-        </a>
     </nav>
 
     <!-- User Info & Logout -->

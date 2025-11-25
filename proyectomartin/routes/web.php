@@ -28,6 +28,9 @@ Route::middleware('auth')->group(function () {
     
     // CRUD de Pacientes
     Route::resource('pacientes', \App\Http\Controllers\PacienteController::class);
+    
+    // CRUD de Consultas
+    Route::resource('consultas', \App\Http\Controllers\ConsultaController::class);
 });
 
 require __DIR__.'/auth.php';
@@ -64,3 +67,63 @@ Route::get('/crear-paciente-temporal', function () {
 });
 
 Route::resource('examenes', ExamenController::class);
+
+// Ruta para resetear secuencia de paciente
+Route::get('/reset-secuencia-paciente', function () {
+    try {
+        // Resetear la secuencia al máximo ID + 1
+        $sql = "SELECT setval(pg_get_serial_sequence('paciente', 'id'), COALESCE((SELECT MAX(id) FROM paciente), 1) + 1, false)";
+        DB::statement($sql);
+        
+        return response()->json([
+            'success' => true,
+            'message' => '✅ Secuencia de paciente reseteada correctamente'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => '❌ Error al resetear secuencia',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// Ruta de prueba para crear paciente
+Route::get('/test-crear-paciente', function () {
+    try {
+        // Generar datos únicos
+        $randomNum = rand(1000, 9999);
+        
+        $paciente = \App\Models\Paciente::create([
+            'rut' => 10000000 + $randomNum,
+            'dv' => rand(0, 9),
+            'nombre' => 'Paciente Test ' . $randomNum,
+            'sexo' => 'Masculino',
+            'fechanac' => '1990-01-01',
+            'telefono' => '+569' . rand(10000000, 99999999),
+            'correo' => 'test' . $randomNum . '@test.cl',
+            'direccion' => 'Direccion Test ' . $randomNum,
+            'tipo_sangre_id' => 1,
+            'clave' => 'test123456',
+            'telefono_emergencia' => '+569' . rand(10000000, 99999999),
+            'centro_medico_id' => 1
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => '✅ Paciente creado exitosamente',
+            'data' => [
+                'id' => $paciente->id,
+                'rut' => $paciente->rut . '-' . $paciente->dv,
+                'nombre' => $paciente->nombre,
+                'correo' => $paciente->correo
+            ]
+        ], 201);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => '❌ Error al crear paciente',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});

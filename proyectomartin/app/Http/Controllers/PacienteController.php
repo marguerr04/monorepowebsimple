@@ -43,18 +43,28 @@ class PacienteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'rut' => 'required|string|max:20|unique:paciente,rut',
-            'dv' => 'required|string|max:1',
+            'rut' => 'required|integer|unique:paciente,rut',
+            'dv' => 'required|integer|min:0|max:9',
             'nombre' => 'required|string|max:255',
             'sexo' => 'required|string|max:50',
             'fechanac' => 'required|date',
             'telefono' => 'nullable|string|max:20',
             'correo' => 'required|email|max:255|unique:paciente,correo',
             'direccion' => 'nullable|string|max:500',
-            'tipo_sangre_id' => 'nullable|exists:tipo_sangre,id',
+            'tipo_sangre_id' => 'nullable|integer|exists:tipo_sangre,id',
             'clave' => 'required|string|min:6',
             'telefono_emergencia' => 'nullable|string|max:20',
         ]);
+
+        // Asignar valores por defecto
+        if (empty($validated['tipo_sangre_id'])) {
+            $validated['tipo_sangre_id'] = 1;
+        }
+        
+        // Asignar centro_medico_id por defecto si no existe
+        if (!isset($validated['centro_medico_id'])) {
+            $validated['centro_medico_id'] = 1;
+        }
 
         Paciente::create($validated);
 
@@ -84,15 +94,15 @@ class PacienteController extends Controller
     public function update(Request $request, Paciente $paciente)
     {
         $validated = $request->validate([
-            'rut' => 'required|string|max:20|unique:paciente,rut,' . $paciente->id,
-            'dv' => 'required|string|max:1',
+            'rut' => 'required|integer|unique:paciente,rut,' . $paciente->id,
+            'dv' => 'required|integer|min:0|max:9',
             'nombre' => 'required|string|max:255',
             'sexo' => 'required|string|max:50',
             'fechanac' => 'required|date',
             'telefono' => 'nullable|string|max:20',
             'correo' => 'required|email|max:255|unique:paciente,correo,' . $paciente->id,
             'direccion' => 'nullable|string|max:500',
-            'tipo_sangre_id' => 'nullable|exists:tipo_sangre,id',
+            'tipo_sangre_id' => 'nullable|integer|exists:tipo_sangre,id',
             'telefono_emergencia' => 'nullable|string|max:20',
         ]);
 
@@ -113,12 +123,27 @@ class PacienteController extends Controller
     public function destroy(Paciente $paciente)
     {
         try {
-            $paciente->delete();
+            // Eliminar registros relacionados en cascada
+            \DB::transaction(function () use ($paciente) {
+                // Eliminar exámenes del paciente
+                \DB::table('examen')->where('paciente_id', $paciente->id)->delete();
+                
+                // Eliminar consultas del paciente (vía ficha_medica)
+                $fichasMedicas = \DB::table('ficha_medica')->where('paciente_id', $paciente->id)->pluck('id');
+                if ($fichasMedicas->isNotEmpty()) {
+                    \DB::table('consulta')->whereIn('ficha_medica_id', $fichasMedicas)->delete();
+                    \DB::table('ficha_medica')->where('paciente_id', $paciente->id)->delete();
+                }
+                
+                // Finalmente eliminar el paciente
+                $paciente->delete();
+            });
+            
             return redirect()->route('pacientes.index')
-                ->with('success', 'Paciente eliminado exitosamente.');
+                ->with('success', 'Paciente y sus registros asociados eliminados exitosamente.');
         } catch (\Exception $e) {
             return redirect()->route('pacientes.index')
-                ->with('error', 'No se puede eliminar el paciente porque tiene registros asociados.');
+                ->with('error', 'Error al eliminar el paciente: ' . $e->getMessage());
         }
     }
 }
