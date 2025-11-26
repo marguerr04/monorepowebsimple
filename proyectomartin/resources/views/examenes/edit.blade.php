@@ -123,21 +123,6 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <div>
-                            <label for="ficha_medica_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Ficha Médica (ID)
-                            </label>
-                            <input type="number" 
-                                   name="ficha_medica_id" 
-                                   id="ficha_medica_id" 
-                                   value="{{ old('ficha_medica_id', $examen->ficha_medica_id) }}"
-                                   placeholder="1, 2, 3..."
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 @error('ficha_medica_id') border-red-500 @enderror">
-                            @error('ficha_medica_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
                     </div>
 
                     <!-- Comentarios -->

@@ -116,18 +116,6 @@
                                    placeholder="1, 2, 3..."
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                         </div>
-
-                        <div>
-                            <label for="ficha_medica_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Ficha Médica (ID)
-                            </label>
-                            <input type="number" 
-                                   name="ficha_medica_id" 
-                                   id="ficha_medica_id" 
-                                   value="{{ old('ficha_medica_id') }}"
-                                   placeholder="1, 2, 3..."
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                        </div>
                     </div>
 
                     <!-- Comentarios -->

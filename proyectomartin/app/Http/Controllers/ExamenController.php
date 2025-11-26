@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Examen;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ExamenController extends Controller
 {
@@ -34,11 +35,24 @@ class ExamenController extends Controller
             'estadoexamen' => 'required|string',
             'comentariosexamen' => 'nullable|string',
             'rutapdf' => 'nullable|string',
-            'ficha_medica_id' => 'nullable|integer',
             'tipo_examen_id' => 'nullable|integer',
             'sucursal_id' => 'nullable|integer',
             'paciente_id' => 'required|integer|exists:paciente,id',
         ]);
+        
+        // Obtener ficha_medica_id buscando por paciente_id
+        $fichaMedica = DB::table('ficha_medica')->where('paciente_id', $validated['paciente_id'])->first();
+        if ($fichaMedica) {
+            $validated['ficha_medica_id'] = $fichaMedica->id;
+        } else {
+            // Si no existe, crear una ficha médica nueva
+            $fichaId = DB::table('ficha_medica')->insertGetId(['paciente_id' => $validated['paciente_id']]);
+            $validated['ficha_medica_id'] = $fichaId;
+        }
+        
+        // Valores por defecto
+        $validated['tipo_examen_id'] = $validated['tipo_examen_id'] ?? 1;
+        $validated['sucursal_id'] = $validated['sucursal_id'] ?? 2;
         
         Examen::create($validated);
         
@@ -67,11 +81,20 @@ class ExamenController extends Controller
             'estadoexamen' => 'required|string',
             'comentariosexamen' => 'nullable|string',
             'rutapdf' => 'nullable|string',
-            'ficha_medica_id' => 'nullable|integer',
             'tipo_examen_id' => 'nullable|integer',
             'sucursal_id' => 'nullable|integer',
             'paciente_id' => 'required|integer|exists:paciente,id',
         ]);
+        
+        // Obtener ficha_medica_id buscando por paciente_id
+        $fichaMedica = DB::table('ficha_medica')->where('paciente_id', $validated['paciente_id'])->first();
+        if ($fichaMedica) {
+            $validated['ficha_medica_id'] = $fichaMedica->id;
+        } else {
+            // Si no existe, crear una ficha médica nueva
+            $fichaId = DB::table('ficha_medica')->insertGetId(['paciente_id' => $validated['paciente_id']]);
+            $validated['ficha_medica_id'] = $fichaId;
+        }
         
         $examen->update($validated);
         

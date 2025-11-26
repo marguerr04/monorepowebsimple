@@ -102,8 +102,7 @@
                                 </a>
                                 <form action="{{ route('consultas.destroy', $consulta->id) }}" 
                                       method="POST" 
-                                      class="inline"
-                                      class="delete-form">
+                                      class="inline delete-form">
                                     @csrf
                                     @method('DELETE')
                                     <button type="button" 
