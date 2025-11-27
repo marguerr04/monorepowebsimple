@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mi_app/screens/dashboard.dart';
 import 'package:mi_app/services/auth_service.dart';
 
-// 🎨 Paleta VitaLog
 const Color cyanClaro = Color(0xFF63FFAC);
 const Color cyanOscuro = Color(0xFF30CBA1);
 const Color negro = Color(0xFF000000);
@@ -50,7 +49,6 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 🩺 Título
                   const Text(
                     'Inicio sesión paciente',
                     style: TextStyle(
@@ -61,7 +59,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // 🧿 Logo circular
                   CircleAvatar(
                     radius: 55,
                     backgroundColor: blanco,
@@ -85,7 +82,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 40),
 
-                  // 🧾 Campo correo
                   _buildInputField(
                     controller: correoController,
                     label: 'Correo',
@@ -95,7 +91,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 🔐 Campo contraseña
                   _buildInputField(
                     controller: contrasenaController,
                     label: 'Contraseña',
@@ -105,7 +100,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // 🟩 Botón de login tipo Ionic
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -146,7 +140,6 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 16),
 
-                  // 🔗 Recuperar contraseña
                   TextButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
