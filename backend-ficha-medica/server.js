@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
@@ -9,6 +10,9 @@ app.use(cors());
 app.use(express.json());
 
 const db = require('./config/database');
+
+// URL de Laravel para notificaciones
+const LARAVEL_API_URL = 'http://127.0.0.1:8001/api';
 
 app.get('/api', (req, res) => {
   res.json({ message: '✅ API de Fichas Médicas funcionando!' });
@@ -72,6 +76,83 @@ app.get('/api/examenes', async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error('Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// === ENDPOINTS PARA DASHBOARD DE FLUTTER ===
+// ============================================
+
+// Estadísticas generales del dashboard
+app.get('/api/estadisticas/dashboard', async (req, res) => {
+  try {
+    console.log('📊 Obteniendo estadísticas del dashboard...');
+    
+    // Total de pacientes
+    const pacientesResult = await db.query('SELECT COUNT(*) as total FROM paciente');
+    const totalPacientes = parseInt(pacientesResult.rows[0].total);
+    
+    // Consultas de hoy
+    const consultasHoyResult = await db.query(
+      `SELECT COUNT(*) as total FROM consulta WHERE fecha = CURRENT_DATE`
+    );
+    const consultasHoy = parseInt(consultasHoyResult.rows[0].total);
+    
+    // Exámenes recientes (últimos 7 días)
+    const examenesResult = await db.query(
+      `SELECT COUNT(*) as total FROM examen WHERE fecha >= CURRENT_DATE - INTERVAL '7 days'`
+    );
+    const examenesRecientes = parseInt(examenesResult.rows[0].total);
+    
+    // Alertas críticas (pacientes con tipo_sangre_id específico como ejemplo)
+    const alertasResult = await db.query(
+      `SELECT COUNT(*) as total FROM paciente WHERE tipo_sangre_id IN (7, 8)`
+    );
+    const alertasCriticas = parseInt(alertasResult.rows[0].total);
+    
+    const stats = {
+      totalPacientes,
+      consultasHoy,
+      examenesRecientes,
+      alertasCriticas
+    };
+    
+    console.log('✅ Estadísticas:', stats);
+    res.json(stats);
+    
+  } catch (error) {
+    console.error('❌ Error en estadísticas dashboard:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Estadísticas de exámenes por tipo
+app.get('/api/examenes/estadisticas', async (req, res) => {
+  try {
+    console.log('📊 Obteniendo estadísticas de exámenes...');
+    
+    const result = await db.query(`
+      SELECT 
+        te.nombre AS tipo_examen,
+        COUNT(CASE WHEN LOWER(e.estadoexamen) = 'completado' THEN 1 END)::int AS aprobados,
+        COUNT(CASE WHEN LOWER(e.estadoexamen) IN ('pendiente', 'en proceso') THEN 1 END)::int AS reprobados,
+        MAX(e.fecha) as last_updated
+      FROM examen e
+      LEFT JOIN tipo_examen te ON e.tipo_examen_id = te.id
+      WHERE te.nombre IS NOT NULL
+      GROUP BY te.nombre
+      ORDER BY te.nombre
+    `);
+    
+    console.log(`✅ ${result.rows.length} tipos de exámenes encontrados`);
+    if (result.rows.length > 0) {
+      console.log('📊 Ejemplo:', result.rows[0]);
+    }
+    res.json(result.rows);
+    
+  } catch (error) {
+    console.error('❌ Error en estadísticas de exámenes:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -512,6 +593,25 @@ app.post('/api/examenes', async (req, res) => {
     );
 
     console.log('✅ Examen guardado exitosamente. ID:', result.rows[0].id);
+    
+    // Enviar notificación a Laravel
+    try {
+      await axios.post(`${LARAVEL_API_URL}/notificaciones`, {
+        tipo: 'examen_creado',
+        mensaje: `Examen #${result.rows[0].id} creado desde Ionic`,
+        datos: {
+          examen_id: result.rows[0].id,
+          paciente_id: pacienteId,
+          tipo_examen: tipoExamen,
+          fecha: fecha
+        }
+      });
+      console.log('🔔 Notificación enviada a Laravel');
+    } catch (notifError) {
+      console.error('⚠️ Error enviando notificación:', notifError.message);
+      // No fallar si la notificación falla
+    }
+    
     res.json({ 
       success: true, 
       message: 'Examen guardado correctamente',
@@ -586,34 +686,9 @@ app.get("/api/analitos/historial/:pacienteId", async (req, res) => {
 
 
 // ============================================
-// === ENDPOINT 2: Exámenes estadísticas Flutter ===
+// === ENDPOINT 2: Exámenes estadísticas Flutter (ELIMINADO - duplicado) ===
 // ============================================
-app.get("/api/examenes/estadisticas", async (req, res) => {
-  try {
-    console.log(`📊 [Flutter] Petición de estadísticas de exámenes`);
-    
-    const queryString = `
-      SELECT
-        te.nombre AS tipo_examen,
-        CAST(COUNT(CASE WHEN ra.aprobado = TRUE THEN 1 END) AS INT) AS aprobados,
-        CAST(COUNT(CASE WHEN ra.aprobado = FALSE THEN 1 END) AS INT) AS reprobados,
-        MAX(e.fecha) as last_updated
-      FROM tipo_examen te
-      LEFT JOIN examen e ON te.id = e.tipo_examen_id
-      LEFT JOIN resultado_analito ra ON e.id = ra.examen_id
-      GROUP BY te.nombre
-      ORDER BY te.nombre ASC;
-    `;
-    
-    const statsResult = await db.query(queryString);
-    console.log(`📊 [Flutter] Estadísticas encontradas: ${statsResult.rows.length} tipos`);
-    res.json(statsResult.rows);
-
-  } catch (err) {
-    console.error("💥 [Flutter] Error en /api/examenes/estadisticas:", err);
-    res.status(500).json({ error: "Error al consultar estadísticas", details: err.message });
-  }
-});
+// NOTA: Endpoint movido arriba cerca de /api/estadisticas/dashboard
 
 
 
@@ -952,5 +1027,58 @@ app.get('/api/pacientes/:id/tratamiento', async (req, res) => {
   } catch (error) {
     console.error('❌ Error obteniendo tratamiento:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ========== LOGIN ADMINISTRADOR ==========
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    console.log('🔐 Intento de login admin:', email);
+
+    // Buscar usuario por email
+    const result = await db.query(
+      'SELECT id, name, email, password FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Credenciales inválidas' 
+      });
+    }
+
+    const user = result.rows[0];
+    
+    // Para simplificar, validamos la contraseña 'password' directamente
+    // En producción deberías usar bcrypt.compare()
+    if (password === 'password') {
+      console.log('✅ Login exitoso para:', user.name);
+      res.json({
+        success: true,
+        message: 'Login exitoso',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: 'admin'
+        }
+      });
+    } else {
+      res.status(401).json({ 
+        success: false, 
+        message: 'Credenciales inválidas' 
+      });
+    }
+
+  } catch (error) {
+    console.error('❌ Error en login admin:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error del servidor',
+      error: error.message
+    });
   }
 });

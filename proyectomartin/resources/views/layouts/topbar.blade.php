@@ -24,10 +24,54 @@
             </div>
 
             <!-- Notifications -->
-            <button class="relative p-2 text-gray-600 hover:text-emerald-700 transition-colors">
-                <i class="fas fa-bell text-xl"></i>
-                <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            <div x-data="notificaciones()" x-init="init()" class="relative">
+                <button @click="toggleDropdown()" class="relative p-2 text-gray-600 hover:text-emerald-700 transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span x-show="unreadCount > 0" 
+                          x-text="unreadCount" 
+                          class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold"></span>
+                </button>
+                
+                <!-- Dropdown de notificaciones -->
+                <div x-show="open" 
+                     @click.away="open = false"
+                     x-cloak
+                     class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between px-4 py-3 border-b">
+                        <h3 class="font-semibold text-gray-800">Notificaciones</h3>
+                        <button @click="marcarTodasLeidas()" class="text-xs text-emerald-600 hover:text-emerald-800">
+                            Marcar todas como leídas
+                        </button>
+                    </div>
+                    
+                    <!-- Lista de notificaciones -->
+                    <div class="divide-y">
+                        <template x-for="notif in notificaciones" :key="notif.id">
+                            <div class="px-4 py-3 hover:bg-gray-50 cursor-pointer" 
+                                 @click="marcarLeida(notif.id)"
+                                 :class="!notif.leida ? 'bg-emerald-50' : ''">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-flask text-emerald-600 text-lg"></i>
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <p class="text-sm font-medium text-gray-800" x-text="notif.mensaje"></p>
+                                        <p class="text-xs text-gray-500 mt-1" x-text="formatFecha(notif.fecha_creacion)"></p>
+                                    </div>
+                                    <span x-show="!notif.leida" class="w-2 h-2 bg-emerald-500 rounded-full ml-2 mt-1"></span>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <!-- Mensaje si no hay notificaciones -->
+                        <div x-show="notificaciones.length === 0" class="px-4 py-8 text-center text-gray-500">
+                            <i class="fas fa-bell-slash text-3xl mb-2"></i>
+                            <p class="text-sm">No hay notificaciones</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- User Dropdown -->
             <div x-data="{ open: false }" class="relative">
@@ -69,3 +113,71 @@
         </div>
     </div>
 </header>
+
+<script>
+function notificaciones() {
+    return {
+        open: false,
+        notificaciones: [],
+        unreadCount: 0,
+        
+        init() {
+            this.cargarNotificaciones();
+            // Recargar cada 10 segundos
+            setInterval(() => this.cargarNotificaciones(), 10000);
+        },
+        
+        async cargarNotificaciones() {
+            try {
+                const response = await fetch('/api/notificaciones');
+                const data = await response.json();
+                this.notificaciones = data;
+                this.unreadCount = data.filter(n => !n.leida).length;
+            } catch (error) {
+                console.error('Error cargando notificaciones:', error);
+            }
+        },
+        
+        toggleDropdown() {
+            this.open = !this.open;
+        },
+        
+        async marcarLeida(id) {
+            try {
+                await fetch(`/api/notificaciones/${id}/marcar-leida`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                await this.cargarNotificaciones();
+            } catch (error) {
+                console.error('Error marcando notificación:', error);
+            }
+        },
+        
+        async marcarTodasLeidas() {
+            try {
+                await fetch('/api/notificaciones/marcar-todas-leidas', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                await this.cargarNotificaciones();
+            } catch (error) {
+                console.error('Error marcando todas:', error);
+            }
+        },
+        
+        formatFecha(fecha) {
+            const date = new Date(fecha);
+            const ahora = new Date();
+            const diff = ahora - date;
+            const minutos = Math.floor(diff / 60000);
+            const horas = Math.floor(diff / 3600000);
+            
+            if (minutos < 1) return 'Ahora';
+            if (minutos < 60) return `Hace ${minutos} min`;
+            if (horas < 24) return `Hace ${horas} h`;
+            return date.toLocaleDateString();
+        }
+    }
+}
+</script>

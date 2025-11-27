@@ -39,13 +39,26 @@ class AnalyteLineChart extends StatelessWidget {
                       LineChartData(
                         gridData: FlGridData(show: true),
                         titlesData: FlTitlesData(
+                          topTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
+                              reservedSize: 40,
                               getTitlesWidget: (value, meta) {
                                 if (data.length > value.toInt()) {
                                   final date = data[value.toInt()].fecha;
-                                  return Text("${date.day}/${date.month}");
+                                  return Transform.rotate(
+                                    angle: -0.5,
+                                    child: Text(
+                                      "${date.day}/${date.month}",
+                                      style: TextStyle(fontSize: 10),
+                                    ),
+                                  );
                                 }
                                 return Text("");
                               },

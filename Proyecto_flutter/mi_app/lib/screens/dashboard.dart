@@ -7,6 +7,7 @@ import '../models/analito_point.model.dart';
 import '../models/examen_stats.model.dart';
 import '../services/analitos_services.dart';
 import '../services/examenes_services.dart';
+import '../services/dashboard_service.dart';
 import '../widgets/dashboard/metric_summary_card.dart';
 
 // CAMBIO 1: Convertir a StatefulWidget
@@ -22,11 +23,19 @@ class _DashboardPageState extends State<DashboardPage> {
   // CAMBIO 3: Agregar variables de estado y servicios
   final AnalitosService _analitosService = AnalitosService();
   final ExamenesService _examenesService = ExamenesService();
+  final DashboardService _dashboardService = DashboardService();
   
   List<AnalitoPoint> _historial = [];
   List<ExamenStats> _estadisticas = [];
+  Map<String, dynamic> _dashboardStats = {
+    'totalPacientes': 0,
+    'consultasHoy': 0,
+    'examenesRecientes': 0,
+    'alertasCriticas': 0,
+  };
   String? _lastFetchTime;
   Timer? _pollingTimer;
+  bool _isLoading = true;
 
   // CAMBIO 4: Agregar initState para polling
   @override
@@ -48,43 +57,40 @@ class _DashboardPageState extends State<DashboardPage> {
     final historialData = await _analitosService.fetchHistorial(1, "Glucosa");
     print("✅ Analitos cargados: ${historialData.length} elementos");
 
-    print("2. 📈 Cargando estadísticas...");
+    print("2. 📈 Cargando estadísticas de exámenes...");
     final statsData = await _examenesService.fetchEstadisticas();
     print("✅ Estadísticas obtenidas del servicio");
     
-    // VERIFICAR MANUALMENTE LOS DATOS CRUDOS
-    if (statsData.isNotEmpty) {
-      final primerStats = statsData[0];
-      print("🔍 Primer elemento stats - Campos:");
-      print("   tipoExamen: ${primerStats.tipoExamen} (tipo: ${primerStats.tipoExamen.runtimeType})");
-      print("   aprobados: ${primerStats.aprobados} (tipo: ${primerStats.aprobados.runtimeType})");
-      print("   reprobados: ${primerStats.reprobados} (tipo: ${primerStats.reprobados.runtimeType})");
-      print("   lastUpdated: ${primerStats.lastUpdated} (tipo: ${primerStats.lastUpdated.runtimeType})");
-    } else {
-      print(" Estadísticas vacías");
-    }
+    print("3. 📊 Cargando estadísticas del dashboard...");
+    final dashboardData = await _dashboardService.getEstadisticasDashboard();
+    print("✅ Estadísticas dashboard: $dashboardData");
 
     setState(() {
       _historial = historialData;
       _estadisticas = statsData;
+      _dashboardStats = dashboardData;
+      _isLoading = false;
       if (historialData.isNotEmpty) {
         _lastFetchTime = historialData.last.fecha.toIso8601String();
       }
     });
     
-    print("3. 🎉 Todos los datos cargados exitosamente!");
+    print("4. 🎉 Todos los datos cargados exitosamente!");
     
   } catch (e) {
     print("❌ Error carga inicial: $e");
     print("📌 Tipo de error: ${e.runtimeType}");
+    setState(() {
+      _isLoading = false;
+    });
   }
 }
 
   Future<void> _loadDataWithPolling() async {
-    if (_lastFetchTime == null) return;
-    
     try {
-      // CARGA CON POLLING - solo datos nuevos
+      print("🔄 Polling: Actualizando datos del dashboard...");
+      
+      // CARGA CON POLLING - datos actualizados
       final nuevosAnalitos = await _analitosService.fetchHistorial(
         1, "Glucosa", 
         lastFetchTime: _lastFetchTime
@@ -93,6 +99,9 @@ class _DashboardPageState extends State<DashboardPage> {
       final nuevasStats = await _examenesService.fetchEstadisticas(
         lastFetchTime: _lastFetchTime
       );
+      
+      // Actualizar estadísticas del dashboard
+      final dashboardData = await _dashboardService.getEstadisticasDashboard();
 
       setState(() {
         // Agregar nuevos datos de analitos
@@ -105,9 +114,14 @@ class _DashboardPageState extends State<DashboardPage> {
         if (nuevasStats.isNotEmpty) {
           _estadisticas = nuevasStats;
         }
+        
+        // Actualizar estadísticas del dashboard
+        _dashboardStats = dashboardData;
+        
+        print("✅ Dashboard actualizado: ${_dashboardStats['totalPacientes']} pacientes");
       });
     } catch (e) {
-      print("Error en polling: $e");
+      print("⚠️ Error en polling: $e");
     }
   }
 
@@ -156,15 +170,16 @@ class _DashboardPageState extends State<DashboardPage> {
                   const SizedBox(height: 24),
 
                   // Carta fila de metricas
-
-                  Row(
+                  _isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Tarjeta 1
                         MetricSummaryCard(
                           title: "Total de pacientes registrados",
-                          value: "7495", // TODO: Reemplazar con datos reales del servicio
-                          changePercentage: "+50%",
+                          value: "${_dashboardStats['totalPacientes']}",
+                          changePercentage: "",
                           changeColor: Colors.green,
                         ),
                         
@@ -172,9 +187,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
                         // Tarjeta 2
                         MetricSummaryCard(
-                          title: "Promedio de consultas diarias",
-                          value: "45", // TODO: Reemplazar con datos reales del servicio
-                          changePercentage: "+2.3%",
+                          title: "Consultas de hoy",
+                          value: "${_dashboardStats['consultasHoy']}",
+                          changePercentage: "",
                           changeColor: Colors.green,
                         ),
                         
@@ -183,8 +198,8 @@ class _DashboardPageState extends State<DashboardPage> {
                         // Tarjeta 3
                         MetricSummaryCard(
                           title: "Pacientes con alertas críticas",
-                          value: "50", // TODO: Reemplazar con datos reales del servicio
-                          changePercentage: "-2.3%",
+                          value: "${_dashboardStats['alertasCriticas']}",
+                          changePercentage: "",
                           changeColor: Colors.red,
                         ),
                       ],

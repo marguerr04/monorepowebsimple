@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mi_app/screens/dashboard.dart';
+import 'package:mi_app/services/auth_service.dart';
 
 // 🎨 Paleta VitaLog
 const Color cyanClaro = Color(0xFF63FFAC);
@@ -19,6 +20,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController correoController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -106,16 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const DashboardPage(),
-                            ),
-                          );
-                        }
-                      },
+                      onPressed: _isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: cyanOscuro,
                         minimumSize: const Size(150, 55),
@@ -129,15 +123,24 @@ class _LoginPageState extends State<LoginPage> {
                         shadowColor: cyanOscuro.withOpacity(0.4),
                         elevation: 6,
                       ),
-                      child: const Text(
-                        'INGRESAR',
-                        style: TextStyle(
-                          color: negro,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          letterSpacing: 1,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: negro,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'INGRESAR',
+                              style: TextStyle(
+                                color: negro,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                letterSpacing: 1,
+                              ),
+                            ),
                     ),
                   ),
 
@@ -211,6 +214,49 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await _authService.login(
+        correoController.text.trim(),
+        contrasenaController.text,
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        // Login exitoso - ir al dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
+        );
+      } else {
+        // Mostrar error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Error al iniciar sesión'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error de conexión: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
